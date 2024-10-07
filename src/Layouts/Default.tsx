@@ -21,6 +21,7 @@ const DefaultLayout = ({ children }: DefaultLayoutProps) => {
 	}, [settings.theme])
 
 	return <Suspense fallback={loading()}>{children}</Suspense>
+
 }
 
 export default DefaultLayout

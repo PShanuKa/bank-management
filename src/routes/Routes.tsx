@@ -49,8 +49,9 @@ const AllRoutes = (props: IRoutesProps) => {
 								isAuthenticated === false ? (
 									<Navigate
 										to={{
-											pathname: '/auth/login',
-											search: 'next=' + route.path,
+											pathname: '/auth/login'
+											// ,
+											// search: 'next=' + route.path,
 										}}
 									/>
 								) : (
