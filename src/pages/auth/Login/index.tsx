@@ -1,12 +1,15 @@
 import { Button, Col, Row } from 'react-bootstrap'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import AuthLayout from '../AuthLayout'
-import useLogin from './useLogin'
+
 
 // components
 import { VerticalForm, FormInput, PageBreadcrumb } from '@/components'
+
+import { useAuth } from '@/common'
+import { useMemo } from 'react'
 
 interface UserData {
 	email: string
@@ -37,8 +40,27 @@ const schemaResolver = yupResolver(
 		password: yup.string().required('Please enter Password'),
 	})
 )
+
+
+
 const Login = () => {
-	const { loading, login, redirectUrl, isAuthenticated } = useLogin()
+	const {isAuthenticated} = useAuth()
+	const { login } = useAuth()
+	const navigate = useNavigate()
+	const location = useLocation()
+	
+	const redirectUrl = useMemo(
+		() =>
+			location.state && location.state.from
+				? location.state.from.pathname
+				: '/',
+		[location.state]
+	)
+	
+	const loginHandler = async ({ email, password }: UserData) => {
+		await login(email, password)
+		navigate('/')
+	}
 	return (
 		<>
 			<PageBreadcrumb title="Log In" />
@@ -52,9 +74,9 @@ const Login = () => {
 				hasThirdPartyLogin
 			>
 				<VerticalForm<UserData>
-					onSubmit={login}
+					onSubmit={loginHandler}
 					resolver={schemaResolver}
-					defaultValues={{ email: 'velonic@techzaa.com', password: 'Velonic' }}
+					defaultValues={{ email: 'johdnndd.doe@example.com', password: 'password123' }}
 				>
 					<FormInput
 						label="Email address"
@@ -73,22 +95,22 @@ const Login = () => {
 						placeholder="Enter your password"
 						containerClass="mb-3"
 					>
-						<Link to="/auth/forgot-password" className="text-muted float-end">
+						{/* <Link to="/auth/forgot-password" className="text-muted float-end">
 							<small>Forgot your password?</small>
-						</Link>
+						</Link> */}
 					</FormInput>
-					<FormInput
+					{/* <FormInput
 						label="Remember me"
 						type="checkbox"
 						name="checkbox"
 						containerClass={'mb-3'}
-					/>
+					/> */}
 					<div className="mb-0 text-start">
 						<Button
 							variant="soft-primary"
 							className="w-100"
 							type="submit"
-							disabled={loading}
+							// disabled={loading}
 						>
 							<i className="ri-login-circle-fill me-1" />{' '}
 							<span className="fw-bold">Log In</span>{' '}

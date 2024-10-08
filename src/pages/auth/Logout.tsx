@@ -1,7 +1,7 @@
 import { Col, Image, Row } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { useEffect } from 'react'
-import { useAuthContext } from '@/common'
+import { useAuth } from '@/common'
 import AuthLayout from './AuthLayout'
 
 // images
@@ -11,11 +11,11 @@ import shield from '@/assets/images/svg/shield.gif'
 import { PageBreadcrumb } from '@/components'
 
 const Logout = () => {
-	const { removeSession } = useAuthContext()
+	const { logout } = useAuth()
 
 	useEffect(() => {
-		removeSession()
-	}, [removeSession])
+		logout()
+	}, [logout])
 
 	const BottomLink = () => {
 		return (

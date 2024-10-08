@@ -15,6 +15,11 @@ const LockScreen = React.lazy(() => import('../pages/auth/LockScreen'))
 
 // // dashboard
 const Dashboard = React.lazy(() => import('../pages/Dashboard'))
+const EmpolyeeMaster = React.lazy(() => import('../pages/MasterFiles/EmployeeMaster'))
+const AreaMaster = React.lazy(() => import('../pages/MasterFiles/AreaMaster'))
+const CustomerMaster = React.lazy(() => import('../pages/MasterFiles/CustomerMaster'))
+const GuarantorMaster = React.lazy(() => import('../pages/MasterFiles/GuarantorMaster'))
+
 
 // // pages
 const ProfilePages = React.lazy(() => import('../pages/other/Profile/'))
@@ -126,9 +131,28 @@ const dashboardRoutes: RoutesProps = {
 			route: PrivateRoute,
 		},
 		{
-			path: '/dashboard',
-			name: 'Dashboard',
-			element: <Dashboard />,
+			path: 'master-files/customer-master',
+			name: 'Root',
+			element: <CustomerMaster />,
+			route: PrivateRoute,
+		},
+		// Ui Element
+		{
+			path: 'master-files/employee-master',
+			name: 'Employee Master',
+			element: <EmpolyeeMaster />,
+			route: PrivateRoute,
+		},
+		{
+			path: 'master-files/area-master',
+			name: 'Area Master',
+			element: <AreaMaster />,
+			route: PrivateRoute,
+		},
+		{
+			path: 'master-files/guarantor-master',
+			name: 'Guarantor-master',
+			element: <GuarantorMaster />,
 			route: PrivateRoute,
 		},
 	],

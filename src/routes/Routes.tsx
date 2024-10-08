@@ -12,20 +12,24 @@ import {
 } from './index'
 import {
 	ThemeSettings,
-	useAuthContext,
+	useAuth,
 	useThemeContext,
 } from '../common/context'
+
+
 interface IRoutesProps {}
 
 const AllRoutes = (props: IRoutesProps) => {
 	const { settings } = useThemeContext()
-
 	const Layout =
 		settings.layout.type === ThemeSettings.layout.type.vertical
 			? VerticalLayout
 			: HorizontalLayout
 	// const api = new APICore()
-	const { isAuthenticated } = useAuthContext()
+
+	const { isAuthenticated,user,token } = useAuth()
+	console.log(user,token)
+
 	return (
 		<React.Fragment>
 			<Routes>

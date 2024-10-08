@@ -20,15 +20,133 @@ const MENU_ITEMS: MenuItemTypes[] = [
 		isTitle: true,
 	},
 	{
-		key: 'dashboard',
-		label: 'Dashboards',
-		isTitle: false,
+		key: 'Dashboard',
+		label: 'Dashboard',
 		url: '/',
+		isTitle: false,
 		icon: 'ri-dashboard-3-line',
-		badge: {
-			variant: 'success',
-			text: '9+',
-		},
+	},
+	{
+		key: 'Master Files',
+		label: 'Master Files',
+		isTitle: false,
+		icon: 'ri-dashboard-3-line',
+		children: [
+			{
+				key: 'employee-master',
+				label: 'Employee Master',
+				url: '/master-files/employee-master',
+				parentKey: 'master-files',
+			},
+			{
+				key: 'area-master',
+				label: 'Area Master',
+				url: '/master-files/area-master',
+				parentKey: 'master-files',
+			},
+			{
+				key: 'customer-master',
+				label: 'Customer Master',
+				url: '/master-files/customer-master',
+				parentKey: 'master-files',
+			},
+			{
+				key: 'guarantor-master',
+				label: 'Guarantor Master',
+				url: '/master-files/guarantor-master',
+				parentKey: 'master-files',
+			},
+		]
+	},
+	{
+		key: 'transaction',
+		label: 'Transaction',
+		isTitle: false,
+		icon: 'ri-dashboard-3-line',
+		children: [
+			{
+				key: 'start-loans',
+				label: 'Start Loans',
+				url: '/transaction/start-loans',
+				parentKey: 'transaction',
+			},
+			{
+				key: 'edit-loans',
+				label: 'Edit Loans',
+				url: 'transaction/edit-loans',
+				parentKey: 'transaction',
+			},
+			{
+				key: 'approve-loans',
+				label: 'Approve Loans',
+				url: 'transaction/approve-loans',
+				parentKey: 'transaction',
+			},
+		]
+	},
+	{
+		key: 'reports',
+		label: 'Reports',
+		isTitle: false,
+		icon: 'ri-dashboard-3-line',
+		children: [
+			{
+				key: 'loan-detailed-report',
+				label: 'Loan Detailed Report',
+				url: '/reports/starter',
+				parentKey: 'reports',
+			},
+			{
+				key: 'collection-report',
+				label: 'Collection Report',
+				url: '/reports/collection-report',
+				parentKey: 'reports',
+			},
+			{
+				key: 'area-report',
+				label: 'Area Report',
+				url: '/reports/area-report',
+				parentKey: 'reports',
+			},
+			{
+				key: 'target-report',
+				label: 'Target Report',
+				url: '/reports/target-report',
+				parentKey: 'reports',
+			},
+			{
+				key: 'loan-reminder',
+				label: 'Loan Reminder',
+				url: '/reports/loan-reminder',
+				parentKey: 'reports',
+			},
+			{
+				key: 'monthly-revenue-report',
+				label: 'Monthly Revenue Report',
+				url: '/reports/monthly-revenue-report',
+				parentKey: 'reports',
+			},
+		]
+	},
+	{
+		key: 'setting',
+		label: 'Setting',
+		isTitle: false,
+		icon: 'ri-dashboard-3-line',
+		children: [
+			{
+				key: 'user-permissions',
+				label: 'User Permissions',
+				url: '/setting/user-permissions',
+				parentKey: 'setting',
+			},
+			{
+				key: 'loan-settings',
+				label: 'Loan Settings',
+				url: '/setting/loan-settings',
+				parentKey: 'setting',
+			},
+		]
 	},
 	{
 		key: 'pages',

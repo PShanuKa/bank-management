@@ -1,7 +1,7 @@
 import { Route, Navigate, RouteProps } from 'react-router-dom'
 
 // helpers
-import { useAuthContext } from '@/common'
+import { useAuth } from '@/common'
 
 /**
  * Private Route forces the authorization before the route can be accessed
@@ -10,7 +10,7 @@ import { useAuthContext } from '@/common'
  */
 
 const PrivateRoute = ({ component: Component, roles, ...rest }: any) => {
-	const { isAuthenticated } = useAuthContext()
+	const { isAuthenticated } = useAuth()
 	return (
 		<Route
 			{...rest}

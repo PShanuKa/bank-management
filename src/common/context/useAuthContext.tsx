@@ -1,54 +1,55 @@
-import {
-	createContext,
-	useContext,
-	useState,
-	useCallback,
-	ReactNode,
-} from 'react'
-import { User } from '@/types'
+import axios from 'axios';
+import { createContext, useState, useEffect, useContext } from 'react';
 
-const AuthContext = createContext<any>({})
 
-export function useAuthContext() {
-	const context = useContext(AuthContext)
-	if (context === undefined) {
-		throw new Error('useAuthContext must be used within an AuthProvider')
-	}
-	return context
+export const AuthContext = createContext<any>(null);
+
+export const useAuth = () => {
+    return useContext(AuthContext);
 }
 
-const authSessionKey = '_VELONIC_AUTH'
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-	const [user, setUser] = useState(
-		localStorage.getItem(authSessionKey)
-			? JSON.parse(localStorage.getItem(authSessionKey) || '{}')
-			: undefined
-	)
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<any>(null);
+  const [token, setToken] = useState<any>(localStorage.getItem('token')
+  ? JSON.parse(localStorage.getItem("token") || '{}')
+  : undefined);
 
-	const saveSession = useCallback(
-		(user: User) => {
-			localStorage.setItem(authSessionKey, JSON.stringify(user))
-			setUser(user)
-		},
-		[setUser]
-	)
+  const [loading, setLoading] = useState<boolean>(true);
 
-	const removeSession = useCallback(() => {
-		localStorage.removeItem(authSessionKey)
-		setUser(undefined)
-	}, [setUser])
+  useEffect(() => {
+    const token = (localStorage.getItem('token')? JSON.parse(localStorage.getItem("token") || '{}')
+    : undefined);
+    const storedUser = JSON.parse(localStorage.getItem('user')|| '{}');
+    
+    if (!token) {
+        setUser(null);
+        setToken(null);
+    }else{
+        setToken(token);
+        setUser(storedUser);
+    }
+    setLoading(false);
+  }, []);
 
-	return (
-		<AuthContext.Provider
-			value={{
-				user,
-				isAuthenticated: Boolean(user),
-				saveSession,
-				removeSession,
-			}}
-		>
-			{children}
-		</AuthContext.Provider>
-	)
-}
+  const login = async (email: string, password: string) => {
+    const response = await axios.post('http://localhost:3000/api/user/login', { email, password })
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+    localStorage.setItem('token', JSON.stringify(response.data.token));
+    setUser(response.data.user);
+    setToken(response.data.token);
+  };
+
+  const logout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    setUser(null);
+    setToken(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ token ,user,isAuthenticated: Boolean(token), loading, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};

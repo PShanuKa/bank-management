@@ -1,5 +1,5 @@
 import { authApi } from '@/common/api'
-import { useAuthContext } from '@/common/context'
+
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -8,7 +8,7 @@ export default function useRegister() {
 
 	const navigate = useNavigate()
 
-	const { isAuthenticated } = useAuthContext()
+	const  isAuthenticated = false
 
 	const register = async ({
 		name,
