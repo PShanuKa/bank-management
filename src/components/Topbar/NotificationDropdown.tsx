@@ -1,13 +1,11 @@
 import { useState } from 'react'
 import { Dropdown } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
-import { NotificationItem } from '@/Layouts/Topbar'
+// import { NotificationItem } from '@/Layouts/Topbar'
 import SimpleBar from 'simplebar-react'
 
-interface NotificationDropDownProps {
-	notifications: Array<NotificationItem>
-}
-const NotificationDropdown = ({ notifications }: NotificationDropDownProps) => {
+
+const NotificationDropdown = ({ notifications }: any) => {
 	const [dropDownOpen, setDropDownOpen] = useState<boolean>(false)
 
 	/**
@@ -95,7 +93,7 @@ const NotificationDropdown = ({ notifications }: NotificationDropDownProps) => {
 				<SimpleBar style={{ maxHeight: 300 }}>
 					{/* item*/}
 
-					{(notifications || []).map((notification, idx) => {
+					{(notifications || []).map((notification: any, idx: number) => {
 						return (
 							<Link key={idx} to="" className="dropdown-item notify-item">
 								<div

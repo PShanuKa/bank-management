@@ -1,15 +1,22 @@
 import { FormInput, PageBreadcrumb } from '@/components'
 import { useModal } from '@/hooks'
-import { records } from '@/pages/ui/tables/data'
+
 
 
 import { Button, Card, Modal,  Table } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import axios from 'axios'
+import { useAuth } from '@/common'
+
+
 
 
 const index = () => {
+
+	
+
+
 	return (
 		<>
 			<PageBreadcrumb title="Employee Management" subName="Master Files" />
@@ -21,6 +28,27 @@ const index = () => {
 export default index
 
 const StripedRows = () => {
+	const [data , setData] = useState<any>([])
+	const { token } = useAuth()
+	
+
+	useEffect(() => {
+		const fetchData = async () => {
+		  try {
+			const response = await axios.get('http://localhost:3000/api/user/all-users', {
+				headers: {
+				  Authorization: `Bearer ${token}`, 
+				},
+			  });
+			setData(response.data);
+			console.log(data)
+		  } catch (error) {
+			console.error('Error fetching data:', error);
+		  }
+		};
+		fetchData();
+	  }, []);
+
 	return (
 		<>
 			<Card>
@@ -40,19 +68,19 @@ const StripedRows = () => {
 								</tr>
 							</thead>
 							<tbody>
-								{(records || []).map((record, idx) => {
+								{(data || []).map((record: any, idx: number) => {
 									return (
 										<tr key={idx}>
 											<td className="table-user">
 												<img
-													src={record.image}
+													src={`http://localhost:3000${record.firstName}`}
 													alt="table-user"
 													className="me-2 rounded-circle"
 												/>
 												&nbsp;{record.name}
 											</td>
-											<td>{record.accountNo}</td>
-											<td>{record.dob}</td>
+											<td>{record.firstName}</td>
+											<td>{record.mobileNumber}</td>
 											<td>
 												<Link to="#" className="text-reset fs-16 px-1">
 													{' '}
@@ -81,25 +109,26 @@ const ModalSizes = () => {
 
 	// State to store form data
 	const [formData, setFormData] = useState({
-		employeeID: '',
-		designation: 'Employee',
+		employeeId: '',
+		designation: 'employee',
 		location: '',
-		profilePicture: null,
+		file: null,
 		firstName: '',
 		surName: '',
-		emailAddress: '',
+		email: '',
 		password:'',
-		nicNumber: '',
-		gender: 'Male',
+		nic: '',
+		gender: 'male',
 		dateOfBirth: '',
 		mobileNumber: '',
 		address: '',
-		civilStatus: 'Single',
+		civilStatus: 'single',
 	})
 
 	// Handle form input change
 	const handleChange = (e: any) => {
 		const { name, value, type, files } = e.target
+
 		setFormData((prevData: any) => ({
 			...prevData,
 			[name]: type === 'file' ? files[0] : value, // For file input, store the file object
@@ -113,8 +142,10 @@ const ModalSizes = () => {
 		const formDataToSend = new FormData()
 
 		for (const key in formData) {
-			formDataToSend.append(key, formData[key])
-		}
+        if (formData.hasOwnProperty(key)) {
+            formDataToSend.append(key, formData[key as keyof typeof formData] as any)
+        }
+    }
 		try {
 			const response = await axios.post('http://localhost:3000/api/user/register', formDataToSend, {
 				headers: {
@@ -153,8 +184,8 @@ const ModalSizes = () => {
 							<FormInput
 								label="Employee ID"
 								type="text"
-								name="employeeID"
-								value={formData.employeeID}
+								name="employeeId"
+								value={formData.employeeId}
 								onChange={handleChange}
 								containerClass="mb-3"
 								
@@ -183,7 +214,7 @@ const ModalSizes = () => {
 							<FormInput
 								label="Profile Picture"
 								type="file"
-								name="profilePicture"
+								name="file"
 								containerClass="mb-3"
 								onChange={handleChange}
 							/>
@@ -206,8 +237,8 @@ const ModalSizes = () => {
 							<FormInput
 								label="Email Address"
 								type="text"
-								name="emailAddress"
-								value={formData.emailAddress}
+								name="email"
+								value={formData.email}
 								onChange={handleChange}
 								containerClass="mb-3"
 							/>
@@ -222,8 +253,8 @@ const ModalSizes = () => {
 							<FormInput
 								label="Nic Number"
 								type="text"
-								name="nicNumber"
-								value={formData.nicNumber}
+								name="nic"
+								value={formData.nic}
 								onChange={handleChange}
 								containerClass="mb-3"
 							/>
@@ -236,9 +267,9 @@ const ModalSizes = () => {
 								value={formData.gender}
 								onChange={handleChange}
 							>
-								<option value="Male">Male</option>
-								<option value="Female">Female</option>
-								<option value="Other">Other</option>
+								<option value="male">Male</option>
+								<option value="female">Female</option>
+								<option value="other">Other</option>
 							</FormInput>
 							<FormInput
 								label="Date Of Birth"
@@ -273,10 +304,10 @@ const ModalSizes = () => {
 								value={formData.civilStatus}
 								onChange={handleChange}
 							>
-								<option value="Single">Single</option>
-								<option value="Married">Married</option>
-								<option value="Divorced">Divorced</option>
-								<option value="Widowed">Widowed</option>
+								<option value="single">Single</option>
+								<option value="married">Married</option>
+								<option value="divorced">Divorced</option>
+								<option value="widowed">Widowed</option>
 							</FormInput>
 							<Modal.Footer>
 								<Button variant="light" onClick={toggleModal}>

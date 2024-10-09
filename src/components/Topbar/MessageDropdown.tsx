@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { Card, Col, Dropdown, Image, Row } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import SimpleBar from 'simplebar-react'
-import { MessageItem } from '@/Layouts/Topbar'
+
 
 interface MessageDropDownProps {
-	messages: Array<MessageItem>
+	messages: Array<any>
 }
 const MessageDropdown = ({ messages }: MessageDropDownProps) => {
 	const [dropDownOpen, setDropDownOpen] = useState<boolean>(false)

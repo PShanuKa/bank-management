@@ -1,8 +1,8 @@
 import { FormInput, PageBreadcrumb } from '@/components'
-import { useModal, useToggle } from '@/hooks'
+import { useModal } from '@/hooks'
 import { records } from '@/pages/ui/tables/data'
 
-import { Button, Card, Col, Modal, Row, Table } from 'react-bootstrap'
+import { Button, Card,  Modal,  Table } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 
 const index = () => {

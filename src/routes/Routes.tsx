@@ -27,8 +27,9 @@ const AllRoutes = (props: IRoutesProps) => {
 			: HorizontalLayout
 	// const api = new APICore()
 
-	const { isAuthenticated,user,token } = useAuth()
-	console.log(user,token)
+	const { isAuthenticated } = useAuth()
+	
+
 
 	return (
 		<React.Fragment>
@@ -50,7 +51,7 @@ const AllRoutes = (props: IRoutesProps) => {
 						<Route
 							path={route.path}
 							element={
-								isAuthenticated === false ? (
+								isAuthenticated === true ? (
 									<Navigate
 										to={{
 											pathname: '/auth/login'

@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom'
 import logo from '@/assets/images/logo.png'
 import logoSm from '@/assets/images/logo-sm.png'
 import logoDark from '@/assets/images/logo-dark.png'
-import profilePic from '@/assets/images/users/avatar-1.jpg'
 
 
 
