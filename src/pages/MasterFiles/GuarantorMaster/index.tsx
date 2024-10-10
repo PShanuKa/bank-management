@@ -2,6 +2,7 @@ import { useAuth } from '@/common'
 import { FormInput, PageBreadcrumb } from '@/components'
 import { useModal } from '@/hooks'
 import axios from 'axios'
+import { toast } from 'material-react-toastify'
 import { useEffect, useState } from 'react'
 import { Button, Card, Image, Modal, Table } from 'react-bootstrap'
 
@@ -25,7 +26,7 @@ const StripedRows = () => {
 		const fetchData = async () => {
 			try {
 				const response = await axios.get(
-					'http://localhost:3000/api/guarantor/all',
+					`${import.meta.env.VITE_API_URL}/guarantor/all`,
 					{
 						headers: {
 							Authorization: `Bearer ${token}`,
@@ -158,7 +159,9 @@ const ModalSizes = ({
 				...prevData,
 				profilePicture: response.data.secure_url,
 			}))
+			toast.success('Image uploaded successfully')
 		} catch (error) {
+			toast.error('Error uploading image')
 			console.error('Error uploading image:', error)
 		}
 	}
@@ -176,7 +179,7 @@ const ModalSizes = ({
 		try {
 			const response = await axios.post(
 				
-				`http://localhost:3000/api/${
+				`${import.meta.env.VITE_API_URL}/${
 					type === 'edit' ? `guarantor/update/${data._id}` : 'guarantor/create'
 				}`,
 				formData,
@@ -187,9 +190,11 @@ const ModalSizes = ({
 					},
 				}
 			)
-			console.log('Form submitted successfully:', response.data)
+
+			toast.success(`Guarantor ${type === 'edit' ? 'updated' : 'added'}`)
 			toggleModal() 
 		} catch (error) {
+			toast.error('Error submitting the form')
 			console.error('Error submitting the form:', error)
 		}
 	}

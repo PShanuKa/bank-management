@@ -3,6 +3,7 @@ import { FormInput, PageBreadcrumb } from '@/components'
 import { useModal } from '@/hooks'
 
 import axios from 'axios'
+import { toast } from 'material-react-toastify'
 import { useEffect, useState } from 'react'
 
 import { Button, Card, Modal, Table } from 'react-bootstrap'
@@ -26,7 +27,7 @@ const StripedRows = () => {
 		const fetchData = async () => {
 			try {
 				const response = await axios.get(
-					'http://localhost:3000/api/area/all',
+					`${import.meta.env.VITE_API_URL}/area/all`,
 					{
 						headers: {
 							Authorization: `Bearer YOUR_TOKEN_HERE`, 
@@ -34,7 +35,7 @@ const StripedRows = () => {
 					}
 				)
 				setData(response.data)
-				console.log(data)
+			
 			} catch (error) {
 				console.error('Error fetching data:', error)
 			}
@@ -135,7 +136,7 @@ const ModalSizes = ({
 		const fetchData = async () => {
 			try {
 				const response = await axios.get(
-					'http://localhost:3000/api/user/all-users',
+					`${import.meta.env.VITE_API_URL}/api/user/all-users`,
 					{
 						headers: {
 							Authorization: `Bearer ${token}`,
@@ -153,7 +154,7 @@ const ModalSizes = ({
 	const onSubmit = async () => {
 		try {
 			await axios.post(
-				`http://localhost:3000/api/${
+				`${import.meta.env.VITE_API_URL}/${
 					type === 'edit' ? `area/update/${data._id}` : 'area/create'
 				}`,
 				formData,
@@ -164,14 +165,11 @@ const ModalSizes = ({
 					},
 				}
 			)
-			setFormData({
-				name: '',
-				code: '',
-				date: '',
-				employeeId: '',
-			})
+			
+			toast.success(`Area ${type === 'edit' ? 'updated' : 'added'}`)
 			toggleModal()
 		} catch (error) {
+			toast.error('Error submitting the form')
 			console.error('Error submitting the form:', error)
 		}
 	}

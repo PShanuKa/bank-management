@@ -3,9 +3,10 @@ import { FormInput, PageBreadcrumb } from '@/components'
 import { useModal } from '@/hooks'
 
 import axios from 'axios'
+import { toast } from 'material-react-toastify'
 import { useEffect, useState } from 'react'
 
-import { Button, Card, Image, Modal, Table } from 'react-bootstrap'
+import { Button, Card, Image, Modal, Spinner, Table } from 'react-bootstrap'
 
 
 const index = () => {
@@ -27,7 +28,7 @@ const StripedRows = () => {
 		const fetchData = async () => {
 			try {
 				const response = await axios.get(
-					'http://localhost:3000/api/customer/all-customers',
+					`${import.meta.env.VITE_API_URL}/customer/all-customers`,
 					{
 						headers: {
 							Authorization: `Bearer ${token}`,
@@ -112,21 +113,15 @@ const ModalSizes = ({
 }) => {
 	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
 		useModal()
-	const [images, setImage] = useState<any>({
-		profilePictureFile: null,
-		homeImageFile: null,
-		billImageFile: null,
-		paySheetImageFile: null,
-		signatureImageFile: null,
-	})
-	const handleImageChange = (e: any) => {
-		setImage({
-			...images,
-			[e.target.name]: e.target.files[0],
+	
+		const [imageLoading , setImageLoading] = useState<any>({
+			profilePicture: false,
+			homeImage: false,
+			billImage: false,
+			paySheetImage: false,
+			signatureImage: false
 		})
-		console.log('images', images)
-		
-	}
+	
 	const [formData, setFormData] = useState({
 		loanCode: '',
 		nic: '',
@@ -145,7 +140,7 @@ const ModalSizes = ({
 		homeImage: '',
 		billImage: '',
 		paySheetImage: '',
-		signatureImage: '',
+		signaatureImge: '',
 	})
 	useEffect(() => {
 		if (type === 'edit') {
@@ -173,9 +168,14 @@ const ModalSizes = ({
 		console.log(data)
 	}, [])
 
-	const handleImageUpload = async ({ name }: { name: string }) => {
+
+	const handleImageChange = async (e: any) => {
+		setImageLoading((prev: any) => ({
+			...prev,
+			[e.target.name]: true,
+		}))
 		const formData = new FormData()
-		formData.append('file', images[name + 'File'])
+		formData.append('file', e.target.files[0])
 		formData.append('upload_preset', 'tfrt1byi')
 		try {
 			const response = await axios.post(
@@ -184,12 +184,21 @@ const ModalSizes = ({
 			)
 			setFormData((prevData: any) => ({
 				...prevData,
-				[name]: response.data.secure_url,
+				[e.target.name]: response.data.secure_url,
 			}))
+			toast.success('Image uploaded successfully')
 		} catch (error) {
+			toast.error('Error uploading image')
 			console.error('Error uploading image:', error)
+		} finally {
+			setImageLoading((prev: any) => ({
+				...prev,
+				[e.target.name]: false,
+			}))
 		}
+		
 	}
+	
 
 	const handleChange = (e: any) => {
 		const { name, value, type, files } = e.target
@@ -203,7 +212,7 @@ const ModalSizes = ({
 	const onSubmit = async () => {
 		try {
 			await axios.post(
-				`http://localhost:3000/api/${
+				`${import.meta.env.VITE_API_URL}/${
 					type === 'edit' ? `customer/update/${data._id}` : 'customer/create'
 				}`,
 				formData,
@@ -215,8 +224,10 @@ const ModalSizes = ({
 				}
 			)
 			
+			toast.success(`Customer ${type === 'edit' ? 'updated' : 'added'}`);
 			toggleModal()
 		} catch (error) {
+			toast.error('Error submitting the form');
 			console.error('Error submitting the form:', error)
 		}
 	}
@@ -236,7 +247,7 @@ const ModalSizes = ({
 					size={size}
 					scrollable={scroll}>
 					<Modal.Header onHide={toggleModal} closeButton>
-						<h4 className="modal-title">Area Master</h4>
+						<h4 className="modal-title">Customer Master</h4>
 					</Modal.Header>
 					<Modal.Body>
 						<FormInput
@@ -261,16 +272,8 @@ const ModalSizes = ({
 							type="text"
 							value={formData.location}
 							containerClass="mb-3"
-							
 							onChange={handleChange}/>
 							
-						<FormInput
-							label="Customer Code"
-							value={formData.areaCode}
-							name="Customer Code"
-							containerClass="mb-3"
-							onChange={handleChange}
-						/>
 						<FormInput
 							name="areaCode"
 							label="Area Code"
@@ -287,18 +290,15 @@ const ModalSizes = ({
 								className="img-fluid avatar-lg rounded"
 							/>
 						)}
+						{imageLoading.profilePicture && <Spinner className="m-2" />}
 						<FormInput
 							label="Profile Picture"
 							type="file"
-							name="profilePictureFile"
+							name="profilePicture"
 							containerClass="mb-3"
 							onChange={handleImageChange}
 						/>
-						<Button
-							className="mb-3"
-							onClick={() => handleImageUpload({ name: 'profilePicture' })}>
-							Upload Pic
-						</Button>
+						
 
 						<FormInput
 							label="First Name"
@@ -408,6 +408,7 @@ const ModalSizes = ({
 							<option value={'above 100000'}>above 100000</option>
 						</FormInput>
 						<p>Home Image</p>
+						{imageLoading.homeImage && <Spinner className="m-2" />}
 						{formData.homeImage && (
 							<Image
 								src={formData.homeImage}
@@ -417,16 +418,13 @@ const ModalSizes = ({
 						)}
 						<FormInput	
 							type="file"
-							name="homeImageFile"
+							name="homeImage"
 							containerClass="mb-3"
 							onChange={handleImageChange}
 						/>
-						<Button
-							className="mb-3"
-							onClick={() => handleImageUpload({ name: 'homeImage' })}>
-							Upload
-						</Button>
+						
 						<p>Bill Image</p>
+						{imageLoading.billImage && <Spinner className="m-2" />}
 						{formData.billImage && (
 							<Image
 								src={formData.billImage}
@@ -436,16 +434,13 @@ const ModalSizes = ({
 						)}
 						<FormInput
 							type="file"
-							name="billImageFile"
+							name="billImage"
 							containerClass="mb-3"
 							onChange={handleImageChange}
 						/>
-						<Button
-							className="mb-3"
-							onClick={() => handleImageUpload({ name: 'billImage' })}>
-							Upload
-						</Button>
+						
 						<p>Pay Sheet</p>
+						{imageLoading.paySheetImage && <Spinner className="m-2" />}
 						{formData.paySheetImage && (
 							<Image
 								src={formData.paySheetImage}
@@ -456,16 +451,13 @@ const ModalSizes = ({
 						<FormInput
 							
 							type="file"
-							name="paySheetImageFile"
+							name="paySheetImage"
 							containerClass="mb-3"
 							onChange={handleImageChange}
 						/>
-						<Button
-							className="mb-3"
-							onClick={() => handleImageUpload({ name: 'paySheetImage' })}>
-							Upload
-						</Button>
+						
 						<p>Signature</p>
+						{imageLoading.signatureImage && <Spinner className="m-2" />}
 						{formData.signatureImage && (
 							<Image
 								src={formData.signatureImage}
@@ -476,15 +468,11 @@ const ModalSizes = ({
 						<FormInput
 							
 							type="file"
-							name="signatureImageFile"
+							name="signatureImage"
 							containerClass="mb-3"
 							onChange={handleImageChange}
 						/>
-						<Button
-							className="mb-3"
-							onClick={() => handleImageUpload({ name: 'signatureImage' })}>
-							Upload
-						</Button>
+						
 					</Modal.Body>
 
 					<Modal.Footer>

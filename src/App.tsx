@@ -6,6 +6,10 @@ import './assets/scss/app.scss'
 import './assets/scss/icons.scss'
 import { AuthProvider } from './common/context/useAuthContext'
 
+import { ToastContainer } from 'material-react-toastify';
+import 'material-react-toastify/dist/ReactToastify.css';
+
+
 
 
 // import { Provider } from 'react-redux'
@@ -19,6 +23,7 @@ function App() {
 		<ThemeProvider>
 			{/* <Provider store={store}> */}
 				<AuthProvider>
+				<ToastContainer />
 					<AllRoutes />
 				</AuthProvider>
 			{/* </Provider> */}

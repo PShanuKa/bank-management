@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query"
 
-const baseUrl = "https://localhost:3000/"
+export const baseUrl = "https://localhost:3000/"
 
 
 const baseQuery = fetchBaseQuery({

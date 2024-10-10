@@ -1,11 +1,12 @@
 import { FormInput, PageBreadcrumb } from '@/components'
 import { useModal } from '@/hooks'
 
-import { Button, Card, Image, Modal, Table } from 'react-bootstrap'
+import { Button, Card, Image, Modal, Spinner, Table } from 'react-bootstrap'
 
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useAuth } from '@/common'
+import { toast } from 'material-react-toastify'
 
 const index = () => {
 	return (
@@ -26,7 +27,7 @@ const StripedRows = () => {
 		const fetchData = async () => {
 			try {
 				const response = await axios.get(
-					'http://localhost:3000/api/user/all-users',
+					`${import.meta.env.VITE_API_URL}/user/all-users`,
 					{
 						headers: {
 							Authorization: `Bearer ${token}`,
@@ -105,8 +106,9 @@ const ModalSizes = ({
 	data?: any
 }) => {
 	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
-		useModal()
-
+		useModal()	
+		
+		const [ imageLoading , setImageLoading] = useState<Boolean>(false)
 	// State to store form data
 	const [formData, setFormData] = useState<any>({
 		designation: '',
@@ -126,10 +128,10 @@ const ModalSizes = ({
 
 	const handleImageChange = async(e: any) => {
 		// setProfilePic(e.target.files[0])
+		setImageLoading(true)
 		const formData = new FormData()
 		formData.append('file', e.target.files[0])
 		formData.append('upload_preset', 'tfrt1byi')
-
 		try {
 			const response = await axios.post(
 				'https://api.cloudinary.com/v1_1/dldtrjalo/image/upload',
@@ -139,13 +141,15 @@ const ModalSizes = ({
 				...prevData,
 				profilePicture: response.data.secure_url,
 			}))
+			toast.success('Image uploaded successfully')
 		} catch (error) {
+			toast.error('Error uploading image')
 			console.error('Error uploading image:', error)
 		}
+		setImageLoading(false)
 	}
 
 	
-
 	useEffect(() => {
 		if (type === 'edit') {
 			setFormData({
@@ -180,7 +184,7 @@ const ModalSizes = ({
 	const onSubmit = async () => {
 		try {
 			await axios.post(
-				`http://localhost:3000/api/${
+				`${import.meta.env.VITE_API_URL}/${
 					type === 'edit' ? `user/update/${data._id}` : 'user/register'
 				}`,
 				formData,
@@ -191,9 +195,10 @@ const ModalSizes = ({
 					},
 				}
 			)
-			
+			toast.success(`Employee ${type === 'edit' ? 'updated' : 'added'}`)
 			toggleModal()
 		} catch (error) {
+			toast.error('Error submitting the form')
 			console.error('Error submitting the form:', error)
 		}
 	}
@@ -225,8 +230,8 @@ const ModalSizes = ({
 								className="form-select"
 								value={formData.designation}
 								onChange={handleChange}>
-								<option defaultValue="Employee">Employee</option>
-								<option value="Admin">Admin</option>
+								<option defaultValue="employee">Employee</option>
+								<option value="admin">Admin</option>
 							</FormInput>
 							<FormInput
 								name="location"
@@ -237,6 +242,8 @@ const ModalSizes = ({
 								onChange={handleChange}
 							/>
 							<h4 className="header-title">Personal Details</h4>
+							<h5 >Profile Picture</h5>
+							{imageLoading && <Spinner className="m-2" />}
 							{formData.profilePicture && (
 								<Image
 									src={formData.profilePicture}
@@ -245,7 +252,6 @@ const ModalSizes = ({
 								/>
 							)}
 							<FormInput
-								label="Profile Picture"
 								type="file"
 								accept="image/*"
 								name="file"

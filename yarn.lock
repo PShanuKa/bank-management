@@ -1115,6 +1115,11 @@ clone@^2.1.1:
   resolved "https://registry.npmjs.org/clone/-/clone-2.1.2.tgz"
   integrity sha512-3Pe/CF1Nn94hyhIYpjtiLhdCoEoz0DqQ+988E9gmeEdQZlojxnOb74wctFyuwWQHzqyf9X7C7MG8juUpqBJT8w==
 
+clsx@^2.1.0:
+  version "2.1.1"
+  resolved "https://registry.npmjs.org/clsx/-/clsx-2.1.1.tgz"
+  integrity sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==
+
 color-convert@^1.9.0:
   version "1.9.3"
   resolved "https://registry.npmjs.org/color-convert/-/color-convert-1.9.3.tgz"
@@ -2102,6 +2107,13 @@ lru-cache@^5.1.1:
   integrity sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==
   dependencies:
     yallist "^3.0.2"
+
+material-react-toastify@^10.0.5:
+  version "10.0.5"
+  resolved "https://registry.npmjs.org/material-react-toastify/-/material-react-toastify-10.0.5.tgz"
+  integrity sha512-0Cg6MD8jJvIYfSQB0cqJYighI+uIWQQWxKXIuZMFP5eRifVfX8El9RSSpq640/pq8lSi0PqkPkmn6vNPy+fnWA==
+  dependencies:
+    clsx "^2.1.0"
 
 "memoize-one@>=3.1.1 <6":
   version "5.2.1"
