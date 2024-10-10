@@ -1,22 +1,13 @@
 import { FormInput, PageBreadcrumb } from '@/components'
 import { useModal } from '@/hooks'
 
+import { Button, Card, Image, Modal, Table } from 'react-bootstrap'
 
-
-import { Button, Card, Modal,  Table } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useAuth } from '@/common'
 
-
-
-
 const index = () => {
-
-	
-
-
 	return (
 		<>
 			<PageBreadcrumb title="Employee Management" subName="Master Files" />
@@ -28,33 +19,37 @@ const index = () => {
 export default index
 
 const StripedRows = () => {
-	const [data , setData] = useState<any>([])
+	const [data, setData] = useState<any>([])
 	const { token } = useAuth()
-	
 
 	useEffect(() => {
 		const fetchData = async () => {
-		  try {
-			const response = await axios.get('http://localhost:3000/api/user/all-users', {
-				headers: {
-				  Authorization: `Bearer ${token}`, 
-				},
-			  });
-			setData(response.data);
-			console.log(data)
-		  } catch (error) {
-			console.error('Error fetching data:', error);
-		  }
-		};
-		fetchData();
-	  }, []);
+			try {
+				const response = await axios.get(
+					'http://localhost:3000/api/user/all-users',
+					{
+						headers: {
+							Authorization: `Bearer ${token}`,
+						},
+					}
+				)
+				setData(response.data)
+				console.log(data)
+			} catch (error) {
+				console.error('Error fetching data:', error)
+			}
+		}
+		fetchData()
+	}, [])
 
 	return (
 		<>
 			<Card>
 				<Card.Header className="d-flex justify-content-between">
 					<h4 className="header-title">Employee Management</h4>
-					<ModalSizes />
+					<ModalSizes>
+						<Button variant="info">Add New Customer</Button>
+					</ModalSizes>
 				</Card.Header>
 				<Card.Body>
 					<div className="table-responsive-sm">
@@ -73,23 +68,20 @@ const StripedRows = () => {
 										<tr key={idx}>
 											<td className="table-user">
 												<img
-													src={`http://localhost:3000${record.firstName}`}
+													src={record.profilePicture}
 													alt="table-user"
 													className="me-2 rounded-circle"
 												/>
-												&nbsp;{record.name}
+												&nbsp;{record.firstName}&nbsp;{record.surName}
 											</td>
-											<td>{record.firstName}</td>
+											<td>{record.nic}</td>
 											<td>{record.mobileNumber}</td>
-											<td>
-												<Link to="#" className="text-reset fs-16 px-1">
-													{' '}
-													<i className="ri-settings-3-line" />
-												</Link>
-												<Link to="#" className="text-reset fs-16 px-1">
-													{' '}
-													<i className="ri-delete-bin-2-line" />
-												</Link>
+											<td className="flex">
+												<div className="">
+													<ModalSizes type="edit" data={record}>
+														<i className="ri-settings-3-line" />
+													</ModalSizes>
+												</div>
 											</td>
 										</tr>
 									)
@@ -103,27 +95,78 @@ const StripedRows = () => {
 	)
 }
 
-const ModalSizes = () => {
+const ModalSizes = ({
+	children,
+	type,
+	data,
+}: {
+	children: any
+	type?: string
+	data?: any
+}) => {
 	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
 		useModal()
 
 	// State to store form data
-	const [formData, setFormData] = useState({
-		employeeId: '',
-		designation: 'employee',
+	const [profilePic, setProfilePic] = useState<any>(null)
+	const [formData, setFormData] = useState<any>({
+		designation: '',
 		location: '',
-		file: null,
+		profilePicture: '',
 		firstName: '',
 		surName: '',
 		email: '',
-		password:'',
+		password: '',
 		nic: '',
-		gender: 'male',
+		gender: '',
 		dateOfBirth: '',
 		mobileNumber: '',
 		address: '',
-		civilStatus: 'single',
+		civilStatus: '',
 	})
+
+	const handleImageChange = (e: any) => {
+		setProfilePic(e.target.files[0])
+	}
+
+	const handleImageUpload = async () => {
+		const formData = new FormData()
+		formData.append('file', profilePic)
+		formData.append('upload_preset', 'tfrt1byi')
+
+		try {
+			const response = await axios.post(
+				'https://api.cloudinary.com/v1_1/dldtrjalo/image/upload',
+				formData
+			)
+			setFormData((prevData: any) => ({
+				...prevData,
+				profilePicture: response.data.secure_url,
+			}))
+		} catch (error) {
+			console.error('Error uploading image:', error)
+		}
+	}
+
+	useEffect(() => {
+		if (type === 'edit') {
+			setFormData({
+				designation: data.designation,
+				location: data.location,
+				profilePicture: data.profilePicture,
+				firstName: data.firstName,
+				surName: data.surName,
+				email: data.email,
+				nic: data.nic,
+				gender: data.gender,
+				dateOfBirth: data.dateOfBirth,
+				mobileNumber: data.mobileNumber,
+				address: data.address,
+				civilStatus: data.civilStatus,
+			})
+		}
+		console.log(data)
+	}, [])
 
 	// Handle form input change
 	const handleChange = (e: any) => {
@@ -131,42 +174,38 @@ const ModalSizes = () => {
 
 		setFormData((prevData: any) => ({
 			...prevData,
-			[name]: type === 'file' ? files[0] : value, // For file input, store the file object
+			[name]: type === 'file' ? files[0] : value,
 		}))
 	}
 
-	
-
 	// Handle form submission
-	const onSubmit = async() => { 
-		const formDataToSend = new FormData()
-
-		for (const key in formData) {
-        if (formData.hasOwnProperty(key)) {
-            formDataToSend.append(key, formData[key as keyof typeof formData] as any)
-        }
-    }
+	const onSubmit = async () => {
 		try {
-			const response = await axios.post('http://localhost:3000/api/user/register', formDataToSend, {
-				headers: {
-					'Content-Type': 'multipart/form-data',
-					Authorization: `Bearer YOUR_TOKEN_HERE`, // Add your token here
-				},
-			})
-			console.log('Form submitted successfully:', response.data)
-			toggleModal() 
+			await axios.post(
+				`http://localhost:3000/api/${
+					type === 'edit' ? `user/update/${data._id}` : 'user/register'
+				}`,
+				formData,
+				{
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer YOUR_TOKEN_HERE`,
+					},
+				}
+			)
+			
+			toggleModal()
 		} catch (error) {
 			console.error('Error submitting the form:', error)
 		}
 	}
 
-
 	return (
 		<>
 			<div className="d-flex flex-wrap gap-2">
-				<Button variant="info" onClick={() => openModalWithSize('lg')}>
-					Add New Employee
-				</Button>
+				<div onClick={() => openModalWithSize('lg')} className="flex">
+					<>{children}</>
+				</div>
 
 				<Modal
 					className="fade"
@@ -174,22 +213,12 @@ const ModalSizes = () => {
 					onHide={toggleModal}
 					dialogClassName={className}
 					size={size}
-					scrollable={scroll}
-				>
+					scrollable={scroll}>
 					<Modal.Header onHide={toggleModal} closeButton>
 						<h4 className="modal-title">Add New Employee</h4>
 					</Modal.Header>
 					<Modal.Body>
 						<form>
-							<FormInput
-								label="Employee ID"
-								type="text"
-								name="employeeId"
-								value={formData.employeeId}
-								onChange={handleChange}
-								containerClass="mb-3"
-								
-							/>
 							<FormInput
 								name="designation"
 								label="Designation"
@@ -197,9 +226,8 @@ const ModalSizes = () => {
 								containerClass="mb-3"
 								className="form-select"
 								value={formData.designation}
-								onChange={handleChange}
-							>
-								<option value="Employee">Employee</option>
+								onChange={handleChange}>
+								<option defaultValue="Employee">Employee</option>
 								<option value="Admin">Admin</option>
 							</FormInput>
 							<FormInput
@@ -211,13 +239,23 @@ const ModalSizes = () => {
 								onChange={handleChange}
 							/>
 							<h4 className="header-title">Personal Details</h4>
+							{formData.profilePicture && (
+								<Image
+									src={formData.profilePicture}
+									alt="avatar"
+									className="img-fluid avatar-lg rounded"
+								/>
+							)}
 							<FormInput
 								label="Profile Picture"
 								type="file"
 								name="file"
 								containerClass="mb-3"
-								onChange={handleChange}
+								onChange={handleImageChange}
 							/>
+							<Button className="mb-3" onClick={handleImageUpload}>
+								Upload Pic
+							</Button>
 							<FormInput
 								label="First Name"
 								type="text"
@@ -265,12 +303,18 @@ const ModalSizes = () => {
 								containerClass="mb-3"
 								className="form-select"
 								value={formData.gender}
-								onChange={handleChange}
-							>
+								onChange={handleChange}>
+								<option defaultValue={''}>Select ...</option>
 								<option value="male">Male</option>
 								<option value="female">Female</option>
 								<option value="other">Other</option>
 							</FormInput>
+							{formData.dateOfBirth && (
+								<h5>
+									Date Of Birth:{' '}
+									{new Date(formData.dateOfBirth).toISOString().split('T')[0]}
+								</h5>
+							)}
 							<FormInput
 								label="Date Of Birth"
 								type="date"
@@ -302,8 +346,8 @@ const ModalSizes = () => {
 								containerClass="mb-3"
 								className="form-select"
 								value={formData.civilStatus}
-								onChange={handleChange}
-							>
+								onChange={handleChange}>
+								<option defaultValue={''}>Select ...</option>
 								<option value="single">Single</option>
 								<option value="married">Married</option>
 								<option value="divorced">Divorced</option>

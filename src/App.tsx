@@ -6,12 +6,15 @@ import './assets/scss/app.scss'
 import './assets/scss/icons.scss'
 import { AuthProvider } from './common/context/useAuthContext'
 
+
+
 // import { Provider } from 'react-redux'
 // import { store } from './app/store'
 
 configureFakeBackend()
 
 function App() {
+	
 	return (
 		<ThemeProvider>
 			{/* <Provider store={store}> */}

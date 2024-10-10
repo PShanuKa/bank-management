@@ -1,9 +1,12 @@
+import { useAuth } from '@/common'
 import { FormInput, PageBreadcrumb } from '@/components'
 import { useModal } from '@/hooks'
-import { records } from '@/pages/ui/tables/data'
 
-import { Button, Card,  Modal,  Table } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
+import axios from 'axios'
+import { useEffect, useState } from 'react'
+
+import { Button, Card, Modal, Table } from 'react-bootstrap'
+
 
 const index = () => {
 	return (
@@ -17,47 +20,63 @@ const index = () => {
 export default index
 
 const StripedRows = () => {
+	const [data, setData] = useState<any>([])
+
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				const response = await axios.get(
+					'http://localhost:3000/api/area/all',
+					{
+						headers: {
+							Authorization: `Bearer YOUR_TOKEN_HERE`, 
+						},
+					}
+				)
+				setData(response.data)
+				console.log(data)
+			} catch (error) {
+				console.error('Error fetching data:', error)
+			}
+		}
+		fetchData()
+	}, [])
 	return (
 		<>
 			<Card>
 				<Card.Header className="d-flex justify-content-between">
 					<h4 className="header-title">Area Master</h4>
-					<ModalSizes />
+					<ModalSizes>
+						<Button variant="info">Add New Customer</Button>
+					</ModalSizes>
 				</Card.Header>
 				<Card.Body>
 					<div className="table-responsive-sm">
 						<Table className="table-striped table-centered mb-0">
 							<thead>
 								<tr>
-									<th>Location</th>
-									<th>Code</th>
-									<th>Employee Name</th>
+									<th>Area Name</th>
+									<th>Area Code</th>
+									<th>Collecting Date</th>
+									<th>Employee</th>
 									<th>Action</th>
 								</tr>
 							</thead>
 							<tbody>
-								{(records || []).map((record, idx) => {
+								{(data || []).map((record: any, idx:any) => {
 									return (
 										<tr key={idx}>
 											<td className="table-user">
-												<img
-													src={record.image}
-													alt="table-user"
-													className="me-2 rounded-circle"
-												/>
+												
 												&nbsp;{record.name}
 											</td>
-											<td>{record.accountNo}</td>
-											<td>{record.dob}</td>
+											<td>{record.code}</td>
+											<td>{record.date}</td>
+											<td>{record.employeeId ? record.employeeId.firstName :	''  }&nbsp;{record.employeeId ? record.employeeId.surName : ''} </td>
 											<td>
-												<Link to="#" className="text-reset fs-16 px-1">
-													{' '}
+												<ModalSizes type="edit" data={record}>
 													<i className="ri-settings-3-line" />
-												</Link>
-												<Link to="#" className="text-reset fs-16 px-1">
-													{' '}
-													<i className="ri-delete-bin-2-line" />
-												</Link>
+												</ModalSizes>
 											</td>
 										</tr>
 									)
@@ -71,15 +90,98 @@ const StripedRows = () => {
 	)
 }
 
-const ModalSizes = () => {
+const ModalSizes = ({
+	children,
+	type,
+	data,
+}: {
+	children: any
+	type?: string
+	data?: any
+}) => {
 	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
 		useModal()
+	const [userData, setUserData] = useState<any>([])
+	const { token } = useAuth()
+
+	const [formData, setFormData] = useState({
+		name: '',
+		code: '',
+		date: '',
+		employeeId: '',
+	})
+
+	useEffect(() => {
+		if (type === 'edit') {
+			setFormData({
+				name: data.name,
+				code: data.code,
+				date: data.date,
+				employeeId: data.employeeId,
+			})
+		}
+		console.log(data)
+	}, [])
+
+	const handleChange = (e: any) => {
+		const { name, value, type, files } = e.target
+		setFormData((prevData: any) => ({
+			...prevData,
+			[name]: type === 'file' ? files[0] : value,
+		}))
+	}
+
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				const response = await axios.get(
+					'http://localhost:3000/api/user/all-users',
+					{
+						headers: {
+							Authorization: `Bearer ${token}`,
+						},
+					}
+				)
+				setUserData(response.data)
+			} catch (error) {
+				console.error('Error fetching data:', error)
+			}
+		}
+		fetchData()
+	}, [])
+
+	const onSubmit = async () => {
+		try {
+			await axios.post(
+				`http://localhost:3000/api/${
+					type === 'edit' ? `area/update/${data._id}` : 'area/create'
+				}`,
+				formData,
+				{
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer YOUR_TOKEN_HERE`,
+					},
+				}
+			)
+			setFormData({
+				name: '',
+				code: '',
+				date: '',
+				employeeId: '',
+			})
+			toggleModal()
+		} catch (error) {
+			console.error('Error submitting the form:', error)
+		}
+	}
+
 	return (
 		<>
 			<div className="d-flex flex-wrap gap-2">
-				<Button variant="info" onClick={() => openModalWithSize('lg')}>
-					Add New Area Master
-				</Button>
+				<div onClick={() => openModalWithSize('lg')} className="flex">
+					<>{children}</>
+				</div>
 
 				<Modal
 					className="fade"
@@ -89,59 +191,61 @@ const ModalSizes = () => {
 					size={size}
 					scrollable={scroll}>
 					<Modal.Header onHide={toggleModal} closeButton>
-						<h4 className="modal-title">Area Master</h4>
+						<h4 className="modal-title">Add New Employee</h4>
 					</Modal.Header>
 					<Modal.Body>
-						<FormInput
-							label="Location"
-							type="text"
-							name="text"
-							containerClass="mb-3"
-							// register={register}
-							key="text"
-							// errors={errors}
-							// control={control}
-						/>
-            <FormInput
-							label="Location"
-							type="Code"
-							name="text"
-							containerClass="mb-3"
-							// register={register}
-							key="text"
-							// errors={errors}
-							// control={control}
-						/>
-						
+						<form>
 							<FormInput
-								name="select"
-								label="Employee Name"
+								label="Area Name"
+								type="text"
+								name="name"
+								value={formData.name}
+								onChange={handleChange}
+								containerClass="mb-3"
+							/>
+							<FormInput
+								label="Area Code"
+								type="text"
+								name="code"
+								value={formData.code}
+								onChange={handleChange}
+								containerClass="mb-3"
+							/>
+							{formData.date && (
+								<h5>
+									Collecting Date:{' '}
+									{new Date(formData.date).toISOString().split('T')[0]}
+								</h5>
+							)}
+							<FormInput
+								label="Collecting Date"
+								type="date"
+								name="date"
+								value={formData.date}
+								onChange={handleChange}
+								containerClass="mb-3"
+							/>
+							<FormInput
+								name="employeeId"
+								label="Employee"
 								type="select"
 								containerClass="mb-3"
 								className="form-select"
-								// register={register}
-								key="select"
-								// errors={errors}
-								// control={control}
-							>
-								<option defaultValue="selected">Select Employee</option>
+								value={formData.employeeId}
+								onChange={handleChange}>
+								<option defaultValue={''}>Select..</option>
 								
-								<option className='flex flex-col'>
-                  <h4>Thusara</h4> 
-                  (<h6>T5455455445V</h6>)
-                 </option>
+								{(userData || []).map((record: any , idx: number) => (
+									<option key={idx} value={record._id}>{record.firstName}</option>
+								))}
 							</FormInput>
-
-							
-						
-
-	
+						</form>
 					</Modal.Body>
 					<Modal.Footer>
 						<Button variant="light" onClick={toggleModal}>
 							Close
 						</Button>{' '}
-						<Button onClick={toggleModal}>Save changes</Button>
+						<Button onClick={onSubmit}>Save changes</Button>
 					</Modal.Footer>
 				</Modal>
 			</div>
