@@ -177,7 +177,7 @@ const ModalSizes = ({
 
 	const onSubmit = async () => {
 		try {
-			const response = await axios.post(
+			 await axios.post(
 				
 				`${import.meta.env.VITE_API_URL}/${
 					type === 'edit' ? `guarantor/update/${data._id}` : 'guarantor/create'

@@ -140,7 +140,7 @@ const ModalSizes = ({
 		homeImage: '',
 		billImage: '',
 		paySheetImage: '',
-		signaatureImge: '',
+		signatureImage: '',
 	})
 	useEffect(() => {
 		if (type === 'edit') {
