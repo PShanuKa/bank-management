@@ -26,7 +26,7 @@ const StripedRows = () => {
 		const fetchData = async () => {
 			try {
 				const response = await axios.get(
-					`${import.meta.env.VITE_API_URL}/guarantor/all`,
+					`${import.meta.env.VITE_API_URL}/api/guarantor/all`,
 					{
 						headers: {
 							Authorization: `Bearer ${token}`,
@@ -179,7 +179,7 @@ const ModalSizes = ({
 		try {
 			 await axios.post(
 				
-				`${import.meta.env.VITE_API_URL}/${
+				`${import.meta.env.VITE_API_URL}/api/${
 					type === 'edit' ? `guarantor/update/${data._id}` : 'guarantor/create'
 				}`,
 				formData,

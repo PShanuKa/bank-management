@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await axios.post('http://localhost:3000/api/user/login', { email, password })
+    const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/user/login`, { email, password })
     localStorage.setItem('user', JSON.stringify(response.data.user));
     localStorage.setItem('token', JSON.stringify(response.data.token));
     setUser(response.data.user);
