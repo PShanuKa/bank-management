@@ -2,31 +2,19 @@ import { Image } from 'react-bootstrap'
 import { ThemeSettings, useAuth, useThemeContext } from '@/common'
 import { Link } from 'react-router-dom'
 
-
 import logo from '@/assets/images/logo.png'
 import logoSm from '@/assets/images/logo-sm.png'
 import logoDark from '@/assets/images/logo-dark.png'
 
-
-
-import {
-	ProfileDropdown,
-} from '@/components'
+import { ProfileDropdown } from '@/components'
 import { useThemeCustomizer } from '@/components'
 import { useViewport } from '@/hooks'
-
-
-
-
 
 export interface ProfileOption {
 	label: string
 	icon: string
 	redirectTo: string
 }
-
-
-
 
 const profileMenus: ProfileOption[] = [
 	// {
@@ -150,8 +138,7 @@ const Topbar = ({ toggleMenu, navOpen }: TopbarProps) => {
 						{/* Sidebar Menu Toggle Button */}
 						<button
 							className="button-toggle-menu"
-							onClick={handleLeftMenuCallBack}
-						>
+							onClick={handleLeftMenuCallBack}>
 							<i className="ri-menu-line" />
 						</button>
 						{/* Horizontal Menu Toggle Button */}
@@ -159,8 +146,7 @@ const Topbar = ({ toggleMenu, navOpen }: TopbarProps) => {
 							className={`navbar-toggle ${navOpen ? 'open' : ''}`}
 							data-bs-toggle="collapse"
 							data-bs-target="#topnav-menu-content"
-							onClick={toggleMenu}
-						>
+							onClick={toggleMenu}>
 							<div className="lines">
 								<span />
 								<span />
@@ -168,10 +154,8 @@ const Topbar = ({ toggleMenu, navOpen }: TopbarProps) => {
 							</div>
 						</button>
 						{/* Topbar Search Form */}
-						
 					</div>
 					<ul className="topbar-menu d-flex align-items-center gap-3">
-						
 						<li className="d-none d-sm-inline-block">
 							<button className="nav-link" onClick={handleRightSideBar}>
 								<i className="ri-settings-3-line fs-22" />
@@ -181,16 +165,16 @@ const Topbar = ({ toggleMenu, navOpen }: TopbarProps) => {
 							<div
 								className="nav-link"
 								id="light-dark-mode"
-								onClick={toggleDarkMode}
-							>
+								onClick={toggleDarkMode}>
 								<i className="ri-moon-line fs-22" />
 							</div>
 						</li>
+
 						<li className="dropdown">
 							<ProfileDropdown
 								menuItems={profileMenus}
-								userImage={user ? user.profilePicture : ''}
-								username={user ? user.firstName + " " + user.surName : ''}
+								userImage={user.profilePicture ? user.profilePicture : null}
+								username={user ? user.firstName + ' ' + user.surName : ''}
 							/>
 						</li>
 					</ul>

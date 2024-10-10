@@ -108,7 +108,6 @@ const ModalSizes = ({
 		useModal()
 
 	// State to store form data
-	const [profilePic, setProfilePic] = useState<any>(null)
 	const [formData, setFormData] = useState<any>({
 		designation: '',
 		location: '',
@@ -125,13 +124,10 @@ const ModalSizes = ({
 		civilStatus: '',
 	})
 
-	const handleImageChange = (e: any) => {
-		setProfilePic(e.target.files[0])
-	}
-
-	const handleImageUpload = async () => {
+	const handleImageChange = async(e: any) => {
+		// setProfilePic(e.target.files[0])
 		const formData = new FormData()
-		formData.append('file', profilePic)
+		formData.append('file', e.target.files[0])
 		formData.append('upload_preset', 'tfrt1byi')
 
 		try {
@@ -147,6 +143,8 @@ const ModalSizes = ({
 			console.error('Error uploading image:', error)
 		}
 	}
+
+	
 
 	useEffect(() => {
 		if (type === 'edit') {
@@ -249,13 +247,11 @@ const ModalSizes = ({
 							<FormInput
 								label="Profile Picture"
 								type="file"
+								accept="image/*"
 								name="file"
 								containerClass="mb-3"
 								onChange={handleImageChange}
 							/>
-							<Button className="mb-3" onClick={handleImageUpload}>
-								Upload Pic
-							</Button>
 							<FormInput
 								label="First Name"
 								type="text"

@@ -24,12 +24,15 @@ const ProfileDropdown = ({
 				onClick={toggleDropdown}
 			>
 				<span className="account-user-avatar">
+					{userImage && 
 					<Image
-						src={userImage}
-						alt="user-image"
-						width={32}
-						className="rounded-circle"
+					src={userImage}
+					alt="user-image"
+					width={32}
+					height={32}
+					className="rounded-circle object-cover"
 					/>
+				}
 				</span>
 				<span className="d-lg-block d-none">
 					<h5 className="my-0 fw-normal">

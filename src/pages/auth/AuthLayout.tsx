@@ -6,7 +6,7 @@ import logo from '@/assets/images/logo.png'
 import logoDark from '@/assets/images/logo-dark.png'
 
 import { Card, Col, Container, Image, Row } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
+
 
 interface AccountLayoutProps {
 	pageImage?: string
@@ -94,25 +94,7 @@ const AuthLayout = ({
 
 												{children}
 
-												{hasThirdPartyLogin && (
-													<div className="text-center mt-4">
-														<p className="text-muted fs-16">Sign in with</p>
-														<div className="d-flex gap-2 justify-content-center mt-3">
-															<Link to="#" className="btn btn-soft-primary">
-																<i className="ri-facebook-circle-fill"></i>
-															</Link>
-															<Link to="#" className="btn btn-soft-danger">
-																<i className="ri-google-fill"></i>
-															</Link>
-															<Link to="#" className="btn btn-soft-info">
-																<i className="ri-twitter-fill"></i>
-															</Link>
-															<Link to="#" className="btn btn-soft-dark">
-																<i className="ri-github-fill"></i>
-															</Link>
-														</div>
-													</div>
-												)}
+												
 											</div>
 										</div>
 									</Col>
