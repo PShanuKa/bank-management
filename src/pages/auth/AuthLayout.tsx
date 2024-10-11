@@ -61,7 +61,7 @@ const AuthLayout = ({
 										<div className="d-flex flex-column h-100">
 											<div className="auth-brand p-4">
 												<a href="index.html" className="logo-light">
-													<Image src={logo} alt="logo" height="22" />
+													<Image src={logo} alt="logo" height="32" />
 												</a>
 												<a href="index.html" className="logo-dark">
 													<Image src={logoDark} alt="dark logo" height="22" />
@@ -91,10 +91,7 @@ const AuthLayout = ({
 														<p className="text-muted mb-3">{helpText}</p>
 													</React.Fragment>
 												)}
-
-												{children}
-
-												
+												{children}								
 											</div>
 										</div>
 									</Col>
@@ -107,7 +104,7 @@ const AuthLayout = ({
 			</div>
 			<footer className="footer footer-alt fw-medium">
 				<span className="text-dark">
-					{new Date().getFullYear()} © Velonic - Theme by Techzaa
+					{new Date().getFullYear()} © Apple Investments
 				</span>
 			</footer>
 		</div>

@@ -6,8 +6,15 @@ import axios from 'axios'
 import { toast } from 'material-react-toastify'
 import { useEffect, useState } from 'react'
 
-import { Button, Card, Image, Modal, Spinner, Table } from 'react-bootstrap'
-
+import {
+	Button,
+	Card,
+	Image,
+	Modal,
+	Placeholder,
+	Spinner,
+	Table,
+} from 'react-bootstrap'
 
 const index = () => {
 	return (
@@ -23,9 +30,11 @@ export default index
 const StripedRows = () => {
 	const [data, setData] = useState<any>([])
 	const { token } = useAuth()
+	const [loading, setLoading] = useState(false)
 
 	useEffect(() => {
 		const fetchData = async () => {
+			setLoading(true)
 			try {
 				const response = await axios.get(
 					`${import.meta.env.VITE_API_URL}/api/customer/all-customers`,
@@ -35,11 +44,11 @@ const StripedRows = () => {
 						},
 					}
 				)
-				setData(response.data)
-				console.log(data)
+				setData(response.data.customers)
 			} catch (error) {
 				console.error('Error fetching data:', error)
 			}
+			setLoading(false)
 		}
 		fetchData()
 	}, [])
@@ -67,36 +76,70 @@ const StripedRows = () => {
 								</tr>
 							</thead>
 							<tbody>
-								{(data || []).map((record: any, idx: number) => {
-									return (
-										<tr key={idx}>
-											<td className="table-user">
-												{record.profilePicture && (
-													
-												<img
-													src={record.profilePicture}
-													alt="table-user"
-													className="me-2 rounded-circle"
-												/>
-												)}
-												&nbsp;{record.firstName}&nbsp;{record.surName}
-											</td>
-											<td>{record.nic}</td>
-											<td>{record.location}</td>
-											<td>{record.loanCode}</td>
-											<td>{record.gender}</td>
-											<td>
-												<ModalSizes type="edit" data={record}>
-													<i className="ri-settings-3-line" />
-												</ModalSizes>
-											</td>
-										</tr>
-									)
-								})}
+								{!loading
+									? (data || []).map((record: any, idx: number) => {
+											return (
+												<tr key={idx}>
+													<td className="table-user">
+														{record.profilePicture && (
+															<img
+																src={record.profilePicture}
+																alt="table-user"
+																className="me-2 rounded-circle"
+															/>
+														)}
+														&nbsp;{record.firstName}&nbsp;{record.surName}
+													</td>
+													<td>{record.nic}</td>
+													<td>{record.location}</td>
+													<td>{record.loanCode}</td>
+													<td>{record.gender}</td>
+													<td>
+														<ModalSizes type="edit" data={record}>
+															<i className="ri-settings-3-line" />
+														</ModalSizes>
+													</td>
+												</tr>
+											)
+									  })
+									: [...Array(4)].map((_, i) => (
+											<tr key={i}>
+												<td>
+													<Placeholder as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder>
+												</td>
+												<td>
+													<Placeholder as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder>
+												</td>
+												<td>
+													<Placeholder as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder>
+												</td>
+												<td>
+													<Placeholder as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder>
+												</td>
+												<td>
+													<Placeholder.Button as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder.Button>
+												</td>
+											</tr>
+									  ))}
 							</tbody>
 						</Table>
 					</div>
 				</Card.Body>
+				{loading === false && data && data.length === 0 && (
+					<div className="d-flex justify-content-center p-3">
+						<h4>No Data</h4>
+					</div>
+				)}
 			</Card>
 		</>
 	)
@@ -113,15 +156,15 @@ const ModalSizes = ({
 }) => {
 	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
 		useModal()
-	
-		const [imageLoading , setImageLoading] = useState<any>({
-			profilePicture: false,
-			homeImage: false,
-			billImage: false,
-			paySheetImage: false,
-			signatureImage: false
-		})
-	
+
+	const [imageLoading, setImageLoading] = useState<any>({
+		profilePicture: false,
+		homeImage: false,
+		billImage: false,
+		paySheetImage: false,
+		signatureImage: false,
+	})
+
 	const [formData, setFormData] = useState({
 		loanCode: '',
 		nic: '',
@@ -168,6 +211,25 @@ const ModalSizes = ({
 		console.log(data)
 	}, [])
 
+	const [areaData, setAreaData] = useState<any>([])
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				const response = await axios.get(
+					`${import.meta.env.VITE_API_URL}/api/area/all`,
+					{
+						headers: {
+							Authorization: `Bearer YOUR_TOKEN_HERE`,
+						},
+					}
+				)
+				setAreaData(response.data.areas)
+			} catch (error) {
+				console.error('Error fetching data:', error)
+			}
+		}
+		fetchData()
+	}, [])
 
 	const handleImageChange = async (e: any) => {
 		setImageLoading((prev: any) => ({
@@ -196,9 +258,7 @@ const ModalSizes = ({
 				[e.target.name]: false,
 			}))
 		}
-		
 	}
-	
 
 	const handleChange = (e: any) => {
 		const { name, value, type, files } = e.target
@@ -211,7 +271,7 @@ const ModalSizes = ({
 
 	const onSubmit = async () => {
 		try {
-			await axios.post(
+			const response = await axios.post(
 				`${import.meta.env.VITE_API_URL}/api/${
 					type === 'edit' ? `customer/update/${data._id}` : 'customer/create'
 				}`,
@@ -223,11 +283,24 @@ const ModalSizes = ({
 					},
 				}
 			)
-			
-			toast.success(`Customer ${type === 'edit' ? 'updated' : 'added'}`);
+
+			if (response && response.data.message) {
+				toast.success(response.data.message)
+			} else {
+				toast.success(`Customer ${type === 'edit' ? 'updated' : 'added'}`)
+			}
+
 			toggleModal()
-		} catch (error) {
-			toast.error('Error submitting the form');
+		} catch (error: any) {
+			if (
+				error.response &&
+				error.response.data &&
+				error.response.data.message
+			) {
+				toast.error(error.response.data.message)
+			} else {
+				toast.error('Error submitting the form')
+			}
 			console.error('Error submitting the form:', error)
 		}
 	}
@@ -269,17 +342,23 @@ const ModalSizes = ({
 						<FormInput
 							name="location"
 							label="Location"
-							type="text"
+							type="select"
 							value={formData.location}
 							containerClass="mb-3"
-							onChange={handleChange}/>
-							
+							className="form-select"
+							onChange={handleChange}
+						>
+							<option value="">Select Location</option>
+							{areaData.map((area: any) => (
+								<option key={area._id} value={area._id}>{area.name}</option>
+							))}
+						</FormInput>
+
 						<FormInput
 							name="areaCode"
 							label="Area Code"
 							value={formData.areaCode}
 							containerClass="mb-3"
-							
 							onChange={handleChange}></FormInput>
 
 						<h4 className="header-title">Personal Details</h4>
@@ -298,7 +377,6 @@ const ModalSizes = ({
 							containerClass="mb-3"
 							onChange={handleImageChange}
 						/>
-						
 
 						<FormInput
 							label="First Name"
@@ -416,13 +494,13 @@ const ModalSizes = ({
 								className="img-fluid avatar-lg  rounded"
 							/>
 						)}
-						<FormInput	
+						<FormInput
 							type="file"
 							name="homeImage"
 							containerClass="mb-3"
 							onChange={handleImageChange}
 						/>
-						
+
 						<p>Bill Image</p>
 						{imageLoading.billImage && <Spinner className="m-2" />}
 						{formData.billImage && (
@@ -438,7 +516,7 @@ const ModalSizes = ({
 							containerClass="mb-3"
 							onChange={handleImageChange}
 						/>
-						
+
 						<p>Pay Sheet</p>
 						{imageLoading.paySheetImage && <Spinner className="m-2" />}
 						{formData.paySheetImage && (
@@ -449,13 +527,12 @@ const ModalSizes = ({
 							/>
 						)}
 						<FormInput
-							
 							type="file"
 							name="paySheetImage"
 							containerClass="mb-3"
 							onChange={handleImageChange}
 						/>
-						
+
 						<p>Signature</p>
 						{imageLoading.signatureImage && <Spinner className="m-2" />}
 						{formData.signatureImage && (
@@ -466,13 +543,11 @@ const ModalSizes = ({
 							/>
 						)}
 						<FormInput
-							
 							type="file"
 							name="signatureImage"
 							containerClass="mb-3"
 							onChange={handleImageChange}
 						/>
-						
 					</Modal.Body>
 
 					<Modal.Footer>

@@ -6,8 +6,7 @@ import axios from 'axios'
 import { toast } from 'material-react-toastify'
 import { useEffect, useState } from 'react'
 
-import { Button, Card, Modal, Table } from 'react-bootstrap'
-
+import { Button, Card, Modal, Placeholder, Table } from 'react-bootstrap'
 
 const index = () => {
 	return (
@@ -22,23 +21,25 @@ export default index
 
 const StripedRows = () => {
 	const [data, setData] = useState<any>([])
+	const [loading, setLoading] = useState(false)
 
 	useEffect(() => {
 		const fetchData = async () => {
+			setLoading(true)
 			try {
 				const response = await axios.get(
 					`${import.meta.env.VITE_API_URL}/api/area/all`,
 					{
 						headers: {
-							Authorization: `Bearer YOUR_TOKEN_HERE`, 
+							Authorization: `Bearer YOUR_TOKEN_HERE`,
 						},
 					}
 				)
-				setData(response.data)
-			
+				setData(response.data.areas)
 			} catch (error) {
 				console.error('Error fetching data:', error)
 			}
+			setLoading(false)
 		}
 		fetchData()
 	}, [])
@@ -48,7 +49,7 @@ const StripedRows = () => {
 				<Card.Header className="d-flex justify-content-between">
 					<h4 className="header-title">Area Master</h4>
 					<ModalSizes>
-						<Button variant="info">Add New Customer</Button>
+						<Button variant="info">Add New Area</Button>
 					</ModalSizes>
 				</Card.Header>
 				<Card.Body>
@@ -57,35 +58,69 @@ const StripedRows = () => {
 							<thead>
 								<tr>
 									<th>Area Name</th>
-									<th>Area Code</th>
-									<th>Collecting Date</th>
+									{/* <th>Area Code</th> */}
 									<th>Employee</th>
+									<th>Collecting Date</th>
 									<th>Action</th>
 								</tr>
 							</thead>
 							<tbody>
-								{(data || []).map((record: any, idx:any) => {
-									return (
-										<tr key={idx}>
-											<td className="table-user">
+								{!loading
+									? (data || []).map((record: any, idx: any) => {
+											return (
+												<tr key={idx}>
+													<td className="table-user">&nbsp;{record.name}</td>
+													{/* <td>{record.code}</td> */}
+													<td>
+														{record.employeeId
+															? record.employeeId.firstName
+															: ''}
+														&nbsp;
+														{record.employeeId ? record.employeeId.surName : ''}{' '}
+													</td>
+															<td>{record.date}</td>
+													<td>
+														<ModalSizes type="edit" data={record}>
+															<i className="ri-settings-3-line" />
+														</ModalSizes>
+													</td>
+												</tr>
+											)
+									  })
+									: [...Array(4)].map((_, i) => (
+											<tr key={i}>
+												<td>
+													<Placeholder as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder>
+												</td>
+												<td>
+													<Placeholder as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder>
+												</td>
 												
-												&nbsp;{record.name}
-											</td>
-											<td>{record.code}</td>
-											<td>{record.date}</td>
-											<td>{record.employeeId ? record.employeeId.firstName :	''  }&nbsp;{record.employeeId ? record.employeeId.surName : ''} </td>
-											<td>
-												<ModalSizes type="edit" data={record}>
-													<i className="ri-settings-3-line" />
-												</ModalSizes>
-											</td>
-										</tr>
-									)
-								})}
+												<td>
+													<Placeholder as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder>
+												</td>
+												<td>
+													<Placeholder.Button as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder.Button>
+												</td>
+											</tr>
+									  ))}
 							</tbody>
 						</Table>
 					</div>
 				</Card.Body>
+				{loading === false && data && data.length === 0 && (
+					<div className="d-flex justify-content-center p-3">
+						<h4>No Data</h4>
+					</div>
+				)}
 			</Card>
 		</>
 	)
@@ -104,19 +139,19 @@ const ModalSizes = ({
 		useModal()
 	const [userData, setUserData] = useState<any>([])
 	const { token } = useAuth()
-
+	
 	const [formData, setFormData] = useState({
 		name: '',
-		code: '',
+		
 		date: '',
 		employeeId: '',
 	})
+	
 
 	useEffect(() => {
 		if (type === 'edit') {
 			setFormData({
 				name: data.name,
-				code: data.code,
 				date: data.date,
 				employeeId: data.employeeId,
 			})
@@ -143,7 +178,7 @@ const ModalSizes = ({
 						},
 					}
 				)
-				setUserData(response.data)
+				setUserData(response.data.users)
 			} catch (error) {
 				console.error('Error fetching data:', error)
 			}
@@ -153,7 +188,7 @@ const ModalSizes = ({
 
 	const onSubmit = async () => {
 		try {
-			await axios.post(
+			const response = await axios.post(
 				`${import.meta.env.VITE_API_URL}/api/${
 					type === 'edit' ? `area/update/${data._id}` : 'area/create'
 				}`,
@@ -165,11 +200,20 @@ const ModalSizes = ({
 					},
 				}
 			)
-			
-			toast.success(`Area ${type === 'edit' ? 'updated' : 'added'}`)
+			if (response && response.data.message) {
+				toast.success(response.data.message);
+			} else {
+				
+				toast.success(`Area ${type === 'edit' ? 'updated' : 'added'}`)
+			}
+
 			toggleModal()
-		} catch (error) {
-			toast.error('Error submitting the form')
+		} catch (error:any) {
+			if (error.response && error.response.data && error.response.data.message) {
+				toast.error(error.response.data.message);
+			} else {
+				toast.error('Error submitting the form');
+			}
 			console.error('Error submitting the form:', error)
 		}
 	}
@@ -189,7 +233,7 @@ const ModalSizes = ({
 					size={size}
 					scrollable={scroll}>
 					<Modal.Header onHide={toggleModal} closeButton>
-						<h4 className="modal-title">Add New Employee</h4>
+						<h4 className="modal-title">Add New Area</h4>
 					</Modal.Header>
 					<Modal.Body>
 						<form>
@@ -201,14 +245,7 @@ const ModalSizes = ({
 								onChange={handleChange}
 								containerClass="mb-3"
 							/>
-							<FormInput
-								label="Area Code"
-								type="text"
-								name="code"
-								value={formData.code}
-								onChange={handleChange}
-								containerClass="mb-3"
-							/>
+							
 							{formData.date && (
 								<h5>
 									Collecting Date:{' '}
@@ -232,9 +269,11 @@ const ModalSizes = ({
 								value={formData.employeeId}
 								onChange={handleChange}>
 								<option defaultValue={''}>Select..</option>
-								
-								{(userData || []).map((record: any , idx: number) => (
-									<option key={idx} value={record._id}>{record.firstName}</option>
+
+								{(userData || []).map((record: any, idx: number) => (
+									<option key={idx} value={record._id}>
+										{record.firstName}
+									</option>
 								))}
 							</FormInput>
 						</form>

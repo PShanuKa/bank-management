@@ -119,16 +119,16 @@ const Topbar = ({ toggleMenu, navOpen }: TopbarProps) => {
 							{/* Logo light */}
 							<Link to="/" className="logo-light">
 								<span className="logo-lg">
-									<Image src={logo} alt="logo" />
+									<Image src={logo} alt="logo" style={{height: '35px'}}/>
 								</span>
 								<span className="logo-sm">
-									<Image src={logoSm} alt="small logo" />
+									<Image src={logoSm} alt="small logo" style={{height: '40px'}}/>
 								</span>
 							</Link>
 							{/* Logo Dark */}
 							<Link to="/" className="logo-dark">
 								<span className="logo-lg">
-									<img src={logoDark} alt="dark logo" />
+									<img src={logoDark} alt="dark logo" style={{height: '35px'}}/>
 								</span>
 								<span className="logo-sm">
 									<img src={logoSm} alt="small logo" />
@@ -169,7 +169,7 @@ const Topbar = ({ toggleMenu, navOpen }: TopbarProps) => {
 								<i className="ri-moon-line fs-22" />
 							</div>
 						</li>
-
+						
 						<li className="dropdown">
 							<ProfileDropdown
 								menuItems={profileMenus}

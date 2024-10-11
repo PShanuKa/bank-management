@@ -148,6 +148,12 @@ const MENU_ITEMS: MenuItemTypes[] = [
 			},
 		]
 	},
+	
+	{
+		key: 'components',
+		label: 'Components',
+		isTitle: true,
+	},
 	{
 		key: 'pages',
 		label: 'Pages',
@@ -259,11 +265,6 @@ const MENU_ITEMS: MenuItemTypes[] = [
 				parentKey: 'auth',
 			},
 		],
-	},
-	{
-		key: 'components',
-		label: 'Components',
-		isTitle: true,
 	},
 	{
 		key: 'base-ui',
@@ -688,6 +689,7 @@ const HORIZONTAL_MENU_ITEMS: MenuItemTypes[] = [
 			},
 		],
 	},
+	
 	{
 		key: 'pages',
 		icon: 'ri-pages-line',
@@ -1150,3 +1152,5 @@ const HORIZONTAL_MENU_ITEMS: MenuItemTypes[] = [
 ]
 
 export { MENU_ITEMS, HORIZONTAL_MENU_ITEMS }
+
+
