@@ -13,7 +13,7 @@ const PageBreadcrumb = ({ subName, title, addedChild }: PageTitleProps) => {
 		<>
 			<Helmet>
 				<title>
-					{title} | Velonic React - Bootstrap 5 Admin & Dashboard Template
+					{title} | Apple Investments
 				</title>
 			</Helmet>
 			{subName && (
@@ -27,7 +27,7 @@ const PageBreadcrumb = ({ subName, title, addedChild }: PageTitleProps) => {
 										style={{ color: '#6C757D' }}
 										className="breadcrumb-item"
 									>
-										Velonic
+										Apple Investments
 									</Link>
 									<Breadcrumb.Item>{subName}</Breadcrumb.Item>
 									<Breadcrumb.Item active>{title}</Breadcrumb.Item>

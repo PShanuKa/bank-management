@@ -65,23 +65,12 @@ const MENU_ITEMS: MenuItemTypes[] = [
 		icon: 'ri-dashboard-3-line',
 		children: [
 			{
-				key: 'start-loans',
-				label: 'Start Loans',
-				url: '/transaction/start-loans',
+				key: 'loans',
+				label: 'Loans',
+				url: '/transaction/loans',
 				parentKey: 'transaction',
 			},
-			{
-				key: 'edit-loans',
-				label: 'Edit Loans',
-				url: 'transaction/edit-loans',
-				parentKey: 'transaction',
-			},
-			{
-				key: 'approve-loans',
-				label: 'Approve Loans',
-				url: 'transaction/approve-loans',
-				parentKey: 'transaction',
-			},
+			
 		]
 	},
 	{

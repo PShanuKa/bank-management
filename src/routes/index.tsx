@@ -19,6 +19,7 @@ const EmpolyeeMaster = React.lazy(() => import('../pages/MasterFiles/EmployeeMas
 const AreaMaster = React.lazy(() => import('../pages/MasterFiles/AreaMaster'))
 const CustomerMaster = React.lazy(() => import('../pages/MasterFiles/CustomerMaster'))
 const GuarantorMaster = React.lazy(() => import('../pages/MasterFiles/GuarantorMaster'))
+const Loan = React.lazy(() => import('../pages/Transactions'))
 
 
 // // pages
@@ -119,7 +120,7 @@ export interface RoutesProps {
 
 // dashboards
 const dashboardRoutes: RoutesProps = {
-	path: '/admin',
+	path: '/',
 	name: 'Dashboards',
 	icon: 'home',
 	header: 'Navigation',
@@ -136,7 +137,6 @@ const dashboardRoutes: RoutesProps = {
 			element: <CustomerMaster />,
 			route: PrivateRoute,
 		},
-		// Ui Element
 		{
 			path: 'master-files/employee-master',
 			name: 'Employee Master',
@@ -153,6 +153,12 @@ const dashboardRoutes: RoutesProps = {
 			path: 'master-files/guarantor-master',
 			name: 'Guarantor-master',
 			element: <GuarantorMaster />,
+			route: PrivateRoute,
+		},
+		{
+			path: 'transaction/loans',
+			name: 'Loan',
+			element: <Loan />,
 			route: PrivateRoute,
 		},
 	],

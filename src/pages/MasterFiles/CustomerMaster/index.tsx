@@ -167,6 +167,7 @@ const ModalSizes = ({
 
 	const [formData, setFormData] = useState({
 		loanCode: '',
+		customerCode: '',
 		nic: '',
 		location: '',
 		areaCode: '',
@@ -190,6 +191,7 @@ const ModalSizes = ({
 			setFormData({
 				loanCode: data.loanCode,
 				nic: data.nic,
+				customerCode: data.customerCode,
 				location: data.location,
 				areaCode: data.areaCode,
 				firstName: data.firstName,
@@ -269,6 +271,14 @@ const ModalSizes = ({
 		console.log(formData)
 	}
 
+	const GenerateCode = () => {
+		const code = `C${Math.floor(Math.random() * 10000000)}`
+		setFormData((prevData: any) => ({
+			...prevData,
+			customerCode: code,
+		}))
+	}
+
 	const onSubmit = async () => {
 		try {
 			const response = await axios.post(
@@ -331,6 +341,16 @@ const ModalSizes = ({
 							value={formData.loanCode}
 							onChange={handleChange}
 						/>
+						<FormInput
+							label="Customer Code"
+							type="text"
+							name="customerCode"
+							containerClass="mb-3"
+							value={formData.customerCode}
+							onChange={handleChange}
+						/>
+						<Button onClick={GenerateCode} className='mb-3'>Generate Code</Button>
+						
 						<FormInput
 							label="NIC Number"
 							type="text"
