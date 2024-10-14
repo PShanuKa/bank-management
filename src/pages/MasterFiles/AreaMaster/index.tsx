@@ -246,12 +246,7 @@ const ModalSizes = ({
 								containerClass="mb-3"
 							/>
 							
-							{formData.date && (
-								<h5>
-									Collecting Date:{' '}
-									{new Date(formData.date).toISOString().split('T')[0]}
-								</h5>
-							)}
+							
 							<FormInput
 								label="Collecting Date"
 								type="date"

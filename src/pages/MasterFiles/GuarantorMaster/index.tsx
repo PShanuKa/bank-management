@@ -157,7 +157,16 @@ const ModalSizes = ({
 		dateOfBirth: '',
 		civilStatus: '',
 		profilePicture: '',
+		guarantorCode: ''
 	})
+
+	const GenerateCode = () => {
+		const code = `G${Math.floor(Math.random() * 10000000)}`
+		setFormData((prevData: any) => ({
+			...prevData,
+			guarantorCode: code,
+		}))
+	}
 
 	useEffect(() => {
 		if (type === 'edit') {
@@ -172,6 +181,7 @@ const ModalSizes = ({
 				dateOfBirth: data.dateOfBirth,
 				civilStatus: data.civilStatus,
 				profilePicture: data.profilePicture,
+				guarantorCode: data.guarantorCode
 			})
 		}
 	}, [])
@@ -268,6 +278,15 @@ const ModalSizes = ({
 							containerClass="mb-3"
 							onChange={handleChange}
 						/>
+						<FormInput
+							label="Customer Code"
+							type="text"
+							name="guarantorCode"
+							containerClass="mb-3"
+							value={formData.guarantorCode}
+							onChange={handleChange}
+						/>
+						<Button onClick={GenerateCode} className='mb-3'>Generate Code</Button>
 						<FormInput
 							label="Location"
 							type="text"
