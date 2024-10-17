@@ -117,6 +117,21 @@ const PendingLoans = () => {
 													</Placeholder>
 												</td>
 												<td>
+													<Placeholder as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder>
+												</td>
+												<td>
+													<Placeholder as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder>
+												</td>
+												<td>
+													<Placeholder as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder>
+												</td>
+												<td>
 													<Placeholder.Button as="p" animation="glow">
 														<Placeholder style={{ width: '25%' }} />
 													</Placeholder.Button>
@@ -233,6 +248,21 @@ const StripedRows = () => {
 													</Placeholder>
 												</td>
 
+												<td>
+													<Placeholder as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder>
+												</td>
+												<td>
+													<Placeholder as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder>
+												</td>
+												<td>
+													<Placeholder as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder>
+												</td>
 												<td>
 													<Placeholder as="p" animation="glow">
 														<Placeholder style={{ width: '25%' }} />
