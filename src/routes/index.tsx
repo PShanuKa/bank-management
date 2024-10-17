@@ -125,7 +125,7 @@ export interface RoutesProps {
 
 // dashboards
 const dashboardRoutes: RoutesProps = {
-	path: '/',
+	path: '/dashboard',
 	name: 'Dashboards',
 	icon: 'home',
 	header: 'Navigation',

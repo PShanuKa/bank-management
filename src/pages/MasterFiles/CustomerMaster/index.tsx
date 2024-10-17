@@ -53,9 +53,10 @@ const StripedRows = () => {
 							<thead>
 								<tr>
 									<th>Name</th>
-									<th>Nic Number</th>
+									<th>Code</th>
+									<th>Nic</th>
 									<th>Location</th>
-									<th>Loan Code</th>
+									<th>Number</th>
 									<th>Gender</th>
 									<th>Action</th>
 								</tr>
@@ -75,11 +76,12 @@ const StripedRows = () => {
 														)}
 														&nbsp;{record.firstName}&nbsp;{record.surName}
 													</td>
+													<td>{record.customerCode}</td>
 													<td>{record.nic}</td>
 													<td>{record.location}</td>
-													<td>{record.loanCode}</td>
+													<td>{record.number}</td>
 													<td>{record.gender}</td>
-													<td>
+													<td >
 														<ModalSizes type="edit" data={record}>
 															<i className="ri-settings-3-line" />
 														</ModalSizes>
@@ -152,7 +154,6 @@ const ModalSizes = ({
 	})
 
 	const [formData, setFormData] = useState({
-		loanCode: '',
 		customerCode: '',
 		nic: '',
 		location: '',
@@ -175,7 +176,6 @@ const ModalSizes = ({
 	useEffect(() => {
 		if (type === 'edit') {
 			setFormData({
-				loanCode: data.loanCode,
 				nic: data.nic,
 				customerCode: data.customerCode,
 				location: data.location,
@@ -206,14 +206,16 @@ const ModalSizes = ({
 		}))
 		const formData = new FormData()
 		formData.append('file', e.target.files[0])
-		formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET)
+		formData.append(
+			'upload_preset',
+			import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+		)
 		try {
 			const response = await uploadImage(formData).unwrap()
 			setFormData((prevData: any) => ({
 				...prevData,
 				[e.target.name]: response.secure_url,
 			}))
-			
 		} catch (error) {
 			toast.error('Error uploading image')
 			console.error('Error uploading image:', error)
@@ -230,7 +232,6 @@ const ModalSizes = ({
 			...prevData,
 			[name]: type === 'file' ? files[0] : value,
 		}))
-		console.log(formData)
 	}
 
 	const GenerateCode = () => {
@@ -251,7 +252,6 @@ const ModalSizes = ({
 			} else {
 				response = await createCustomer(formData).unwrap()
 				setFormData({
-					loanCode: '',
 					customerCode: '',
 					nic: '',
 					location: '',
@@ -276,7 +276,7 @@ const ModalSizes = ({
 
 			toggleModal()
 		} catch (err: any) {
-			if (err.status === 409 || err.status === 404) {
+			if (err.status === 409 || err.status === 404 || err.status === 400) {
 				toast.error(err.data.message)
 			} else {
 				console.error(err)
@@ -303,24 +303,19 @@ const ModalSizes = ({
 					</Modal.Header>
 					<Modal.Body>
 						<FormInput
-							label="Loan Code"
-							type="text"
-							name="loanCode"
-							containerClass="mb-3"
-							value={formData.loanCode}
-							onChange={handleChange}
-						/>
-						<FormInput
 							label="Customer Code"
 							type="text"
 							name="customerCode"
 							containerClass="mb-3"
 							value={formData.customerCode}
 							onChange={handleChange}
+							disabled = {type === 'edit'}
 						/>
-						<Button onClick={GenerateCode} className="mb-3">
+						{(type === 'edit') || <Button onClick={GenerateCode} className="mb-3">
 							Generate Code
-						</Button>
+						</Button>}
+						
+						
 						<FormInput
 							label="NIC Number"
 							type="text"
@@ -330,10 +325,10 @@ const ModalSizes = ({
 							onChange={handleChange}
 						/>
 						<FormInput
-							name="location"
-							label="Location"
+							name="areaCode"
+							label="Area"
 							type="select"
-							value={formData.location}
+							value={formData.areaCode}
 							containerClass="mb-3"
 							className="form-select"
 							onChange={handleChange}>
@@ -346,9 +341,9 @@ const ModalSizes = ({
 						</FormInput>
 
 						<FormInput
-							name="areaCode"
-							label="Area Code"
-							value={formData.areaCode}
+							name="location"
+							label="Location"
+							value={formData.location}
 							containerClass="mb-3"
 							onChange={handleChange}></FormInput>
 
@@ -385,12 +380,7 @@ const ModalSizes = ({
 							onChange={handleChange}
 							containerClass="mb-3"
 						/>
-						{formData.dateOfBirth && (
-							<h5>
-								Date Of Birth:{' '}
-								{new Date(formData.dateOfBirth).toISOString().split('T')[0]}
-							</h5>
-						)}
+
 						<FormInput
 							label="Date Of Birth"
 							type="date"
@@ -407,7 +397,8 @@ const ModalSizes = ({
 							type="select"
 							containerClass="mb-3"
 							className="form-select">
-							<option defaultValue="selected" value={'male'}>
+								<option defaultValue="" value={''}>Select ...</option>
+							<option  value={'male'}>
 								Male
 							</option>
 							<option value={'female'}>Female</option>
@@ -438,7 +429,8 @@ const ModalSizes = ({
 							containerClass="mb-3"
 							className="form-select"
 							onChange={handleChange}>
-							<option defaultValue="selected" value={'single'}>
+								<option defaultValue="" value={''}>Select ...</option>
+							<option  value={'single'}>
 								Single
 							</option>
 							<option value={'married'}>Married</option>
@@ -453,7 +445,8 @@ const ModalSizes = ({
 							containerClass="mb-3"
 							onChange={handleChange}
 							className="form-select">
-							<option value={'0-20000'} defaultValue="selected">
+								<option defaultValue="" value={''}>Select ...</option>
+							<option value={'0-20000'} >
 								0-20000
 							</option>
 							<option value={'20000-40000'}>20000-40000</option>
@@ -470,7 +463,8 @@ const ModalSizes = ({
 							containerClass="mb-3"
 							onChange={handleChange}
 							className="form-select">
-							<option value={'0-50000'} defaultValue="selected">
+								<option defaultValue="" value={''}>Select ...</option>
+							<option value={'0-50000'} >
 								0-50000
 							</option>
 							<option value={'50000-100000'}>50000-100000</option>

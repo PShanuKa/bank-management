@@ -1,15 +1,8 @@
 import { Col, Row } from 'react-bootstrap'
 import Statistics from './Statistics'
-import WeeklySelesChart from './WeeklySelesChart'
-import YearlySelesChart from './YearlySelesChart'
-import ChatList from './ChatList'
 import Projects from './Projects'
-
-// componets
 import { PageBreadcrumb } from '@/components'
-
-// data
-import { chatMessages, statistics } from './data'
+import {  statistics } from './data'
 
 const Dashboard = () => {
 	return (
@@ -30,22 +23,8 @@ const Dashboard = () => {
 					)
 				})}
 			</Row>
-
 			<Row>
-				<Col lg={8}>
-					<WeeklySelesChart />
-				</Col>
-				<Col lg={4}>
-					<YearlySelesChart />
-				</Col>
-			</Row>
-
-			<Row>
-				<Col xl={4}>
-					<ChatList messages={chatMessages} />
-				</Col>
-
-				<Col xl={8}>
+				<Col xl={12}>
 					<Projects />
 				</Col>
 			</Row>
@@ -54,3 +33,5 @@ const Dashboard = () => {
 }
 
 export default Dashboard
+
+

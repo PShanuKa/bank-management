@@ -2,6 +2,7 @@ import { FormInput, PageBreadcrumb } from '@/components'
 import {
 
 	useGetReminderLoanQuery,
+	useUpdateLoanMutation,
 } from '@/features/api/loanSlice'
 
 import { useModal } from '@/hooks'
@@ -68,7 +69,7 @@ const StripedRows = () => {
 													<td className="table-user">{record?.status}</td>
 
 													<td className="d-flex gap-3">
-														<ActionModal>
+														<ActionModal data={record}>
 															<i className="ri-settings-3-line" />
 														</ActionModal>
 													</td>
@@ -117,13 +118,17 @@ const StripedRows = () => {
 const ActionModal = ({ children, data }: { children: any; data?: any }) => {
 	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
 		useModal()
-
 	const [formData, setFormData] = useState<any>({
 		reminderDescription: '',
-		endDate: '',
+		endDate: data.endDate,
 	})
-
 	
+	const [updateReminder] = useUpdateLoanMutation()
+	const handleSubmit = (e: any) => {
+		e.preventDefault()
+		updateReminder({ id: data._id, formData })
+		toggleModal()
+	}
 
 	return (
 		<>
@@ -159,7 +164,7 @@ const ActionModal = ({ children, data }: { children: any; data?: any }) => {
 								type="date"
 								name="file"
 								containerClass="mb-3"
-								value={formData.endDate}
+								value={String(formData.endDate.slice(0, 10))}
 								onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
 							/>
 						</form>
@@ -170,7 +175,7 @@ const ActionModal = ({ children, data }: { children: any; data?: any }) => {
 						</Button>{' '}
 						
 						<Button
-							// onClick={() => onSubmit()}
+							onClick={handleSubmit}
 							variant="success">
 							Save Change
 						</Button>

@@ -40,6 +40,7 @@ const StripedRows = () => {
 							<thead>
 								<tr>
 									<th>Name</th>
+									<th>Code</th>
 									<th>Nic Number</th>
 									<th>Location</th>
 									<th>Gender</th>
@@ -61,6 +62,7 @@ const StripedRows = () => {
 														)}
 														&nbsp;{record.firstName}&nbsp;{record.surName}
 													</td>
+													<td>{record.guarantorCode}</td>
 													<td>{record.nic}</td>
 													<td>{record.location}</td>
 													<td>{record.gender}</td>
@@ -229,7 +231,7 @@ const ModalSizes = ({
 			toast.success(response.message)
 			toggleModal()
 		} catch (err: any) {
-			if (err.status === 409 || err.status === 404) {
+			if (err.status === 409 || err.status === 404 || err.status === 400) {
 				toast.error(err.data.message)
 			} else {
 				console.error(err)
@@ -270,8 +272,10 @@ const ModalSizes = ({
 							containerClass="mb-3"
 							value={formData.guarantorCode}
 							onChange={handleChange}
+							disabled = {type === 'edit'}
 						/>
-						<Button onClick={GenerateCode} className='mb-3'>Generate Code</Button>
+						{type === 'edit' || <Button onClick={GenerateCode} className='mb-3'>Generate Code</Button>}
+						
 						<FormInput
 							label="Location"
 							type="text"
@@ -330,6 +334,7 @@ const ModalSizes = ({
 							value={formData.gender}
 							className="form-select"
 							onChange={handleChange}>
+								<option value="">Select ...</option>
 							<option value="male">Male</option>
 							<option value="female">Female</option>
 							<option value="other">Other</option>
@@ -342,6 +347,7 @@ const ModalSizes = ({
 							containerClass="mb-3"
 							className="form-select"
 							onChange={handleChange}>
+								<option value="">Select ...</option>
 							<option value="single">Single</option>
 							<option value="married">Married</option>
 							<option value="divorced">Divorced</option>

@@ -478,7 +478,7 @@ const ModalSizes = ({
 			toast.success(response.message)
 			toggleModal()
 		} catch (err: any) {
-			if (err.status === 409 || err.status === 404) {
+			if (err.status === 409 || err.status === 404 || err.status === 400) {
 				toast.error(err.data.message)
 			} else {
 				console.error(err)

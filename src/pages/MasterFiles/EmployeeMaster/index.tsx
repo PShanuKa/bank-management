@@ -137,7 +137,7 @@ const ModalSizes = ({
 	// const [imageLoading, setImageLoading] = useState<Boolean>(false)
 	// State to store form data
 	const [formData, setFormData] = useState<any>({
-		designation: '',
+		
 		location: '',
 		profilePicture: '',
 		firstName: '',
@@ -150,6 +150,7 @@ const ModalSizes = ({
 		mobileNumber: '',
 		address: '',
 		civilStatus: '',
+		isAdmin: false,
 	})
 
 	const handleImageChange = async (e: any) => {
@@ -169,7 +170,6 @@ const ModalSizes = ({
 	useEffect(() => {
 		if (type === 'edit') {
 			setFormData({
-				designation: data.designation,
 				location: data.location,
 				profilePicture: data.profilePicture,
 				firstName: data.firstName,
@@ -181,6 +181,7 @@ const ModalSizes = ({
 				mobileNumber: data.mobileNumber,
 				address: data.address,
 				civilStatus: data.civilStatus,
+				isAdmin: data.isAdmin,
 			})
 		}
 	}, [])
@@ -201,23 +202,24 @@ const ModalSizes = ({
 				response = await updateEmployee({ formData, id: data._id }).unwrap()
 			} else {
 				response = await createEmployee(formData).unwrap()
+				setFormData({
+					designation: '',
+					location: '',
+					profilePicture: '',
+					firstName: '',
+					surName: '',
+					email: '',
+					password: '',
+					isAdmin: false,
+					nic: '',
+					gender: '',
+					dateOfBirth: '',
+					mobileNumber: '',
+					address: '',
+					civilStatus: '',
+				})
 			}
 			toast.success(response.message)
-			setFormData({
-				designation: '',
-				location: '',
-				profilePicture: '',
-				firstName: '',
-				surName: '',
-				email: '',
-				password: '',
-				nic: '',
-				gender: '',
-				dateOfBirth: '',
-				mobileNumber: '',
-				address: '',
-				civilStatus: '',
-			})
 			toggleModal()
 		} catch (err: any) {
 			if (err.status === 409 || err.status === 404) {
@@ -254,11 +256,11 @@ const ModalSizes = ({
 								type="select"
 								containerClass="mb-3"
 								className="form-select"
-								value={formData.designation}
-								onChange={handleChange}>
+								value={String(formData.isAdmin)}
+								onChange={(e)=> setFormData((prevData: any) => ({ ...prevData, isAdmin: (e.target.value === 'true' ? true : false) }))}>
 								<option defaultValue="">Select ...</option>
-								<option defaultValue="employee">Employee</option>
-								<option value="admin">Admin</option>
+								<option value='false' >Employee</option>
+								<option value='true'>Admin</option>
 							</FormInput>
 							<FormInput
 								name="location"
@@ -339,12 +341,7 @@ const ModalSizes = ({
 								<option value="female">Female</option>
 								<option value="other">Other</option>
 							</FormInput>
-							{formData.dateOfBirth && (
-								<h5>
-									Date Of Birth:{' '}
-									{new Date(formData.dateOfBirth).toISOString().split('T')[0]}
-								</h5>
-							)}
+							
 							<FormInput
 								label="Date Of Birth"
 								type="date"
