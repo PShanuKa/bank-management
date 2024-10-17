@@ -12,9 +12,13 @@ import {
 } from 'react-bootstrap'
 
 import { useEffect, useState } from 'react'
-import axios from 'axios'
-import { useAuth } from '@/common'
 import { toast } from 'material-react-toastify'
+import {
+	useCreateEmployeeMutation,
+	useGetAllEmployeesQuery,
+	useUpdateEmployeeMutation,
+} from '@/features/api/employeeSlice'
+import { useUploadImageMutation } from '@/features/api/uploadSlice'
 
 const index = () => {
 	return (
@@ -28,33 +32,10 @@ const index = () => {
 export default index
 
 const StripedRows = () => {
-	const [data, setData] = useState<any>([])
-	const [loading, setLoading] = useState(false)
-	const { token } = useAuth()
+	const [page] = useState(1)
+	const limit = 10000
 
-	useEffect(() => {
-		const fetchData = async () => {
-			setLoading(true)
-			try {
-				const response = await axios.get(
-					`${import.meta.env.VITE_API_URL}/api/user/all-users`,
-					{
-						headers: {
-							Authorization: `Bearer ${token}`,
-						},
-					}
-				)
-				setData(response.data.users)
-			} catch (error) {
-				console.error('Error fetching data:', error)
-			}
-			setLoading(false)
-		}
-		fetchData()
-	}, [])
-
-	
-
+	const { data, isLoading: loading } = useGetAllEmployeesQuery({ page, limit })
 	return (
 		<>
 			<Card>
@@ -101,7 +82,7 @@ const StripedRows = () => {
 												</td>
 											</tr>
 									  ))
-									: (data || []).map((record: any, idx: number) => {
+									: (data?.users || [])?.map((record: any, idx: number) => {
 											return (
 												<tr key={idx}>
 													<td className="table-user">
@@ -149,8 +130,11 @@ const ModalSizes = ({
 }) => {
 	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
 		useModal()
+	const [createEmployee] = useCreateEmployeeMutation()
+	const [updateEmployee] = useUpdateEmployeeMutation()
+	const [uploadImage, { isLoading: imageLoading }] = useUploadImageMutation();
 
-	const [imageLoading, setImageLoading] = useState<Boolean>(false)
+	// const [imageLoading, setImageLoading] = useState<Boolean>(false)
 	// State to store form data
 	const [formData, setFormData] = useState<any>({
 		designation: '',
@@ -169,26 +153,17 @@ const ModalSizes = ({
 	})
 
 	const handleImageChange = async (e: any) => {
-		// setProfilePic(e.target.files[0])
-		setImageLoading(true)
 		const formData = new FormData()
 		formData.append('file', e.target.files[0])
-		formData.append('upload_preset', 'tfrt1byi')
+		formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET)
 		try {
-			const response = await axios.post(
-				'https://api.cloudinary.com/v1_1/dldtrjalo/image/upload',
-				formData
-			)
-			setFormData((prevData: any) => ({
-				...prevData,
-				profilePicture: response.data.secure_url,
-			}))
-			toast.success('Image uploaded successfully')
+			const response = await uploadImage(formData).unwrap()
+			setFormData((prevData: any) => ({ ...prevData, [e.target.name]: response.secure_url }))
+			
 		} catch (error) {
 			toast.error('Error uploading image')
 			console.error('Error uploading image:', error)
 		}
-		setImageLoading(false)
 	}
 
 	useEffect(() => {
@@ -210,7 +185,6 @@ const ModalSizes = ({
 		}
 	}, [])
 
-	// Handle form input change
 	const handleChange = (e: any) => {
 		const { name, value, type, files } = e.target
 
@@ -220,36 +194,38 @@ const ModalSizes = ({
 		}))
 	}
 
-	
 	const onSubmit = async () => {
 		try {
-			const response =await axios.post(
-				`${import.meta.env.VITE_API_URL}/api/${
-					type === 'edit' ? `user/update/${data._id}` : 'user/register'
-				}`,
-				formData,
-				{
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `Bearer YOUR_TOKEN_HERE`,
-					},
-				}
-			)
-			
-			if (response && response.data.message) {
-				toast.success(response.data.message);
+			let response
+			if (type === 'edit') {
+				response = await updateEmployee({ formData, id: data._id }).unwrap()
 			} else {
-				toast.success(`Employee ${type === 'edit' ? 'updated' : 'added'}`);
+				response = await createEmployee(formData).unwrap()
 			}
-			
+			toast.success(response.message)
+			setFormData({
+				designation: '',
+				location: '',
+				profilePicture: '',
+				firstName: '',
+				surName: '',
+				email: '',
+				password: '',
+				nic: '',
+				gender: '',
+				dateOfBirth: '',
+				mobileNumber: '',
+				address: '',
+				civilStatus: '',
+			})
 			toggleModal()
-		} catch (error: any) {
-			if (error.response && error.response.data && error.response.data.message) {
-				toast.error(error.response.data.message);
+		} catch (err: any) {
+			if (err.status === 409 || err.status === 404) {
+				toast.error(err.data.message)
 			} else {
-				toast.error('Error submitting the form');
+				console.error(err)
+				toast.error('something went wrong')
 			}
-			console.error('Error submitting the form:', error)
 		}
 	}
 
@@ -280,6 +256,7 @@ const ModalSizes = ({
 								className="form-select"
 								value={formData.designation}
 								onChange={handleChange}>
+								<option defaultValue="">Select ...</option>
 								<option defaultValue="employee">Employee</option>
 								<option value="admin">Admin</option>
 							</FormInput>
@@ -293,18 +270,19 @@ const ModalSizes = ({
 							/>
 							<h4 className="header-title">Personal Details</h4>
 							<h5>Profile Picture</h5>
-							{imageLoading && <Spinner className="m-2" />}
-							{formData.profilePicture && (
-								<Image
+							{imageLoading ? <Spinner className="m-2" /> : 
+								formData.profilePicture && (
+									<Image
 									src={formData.profilePicture}
 									alt="avatar"
 									className="img-fluid avatar-lg rounded"
-								/>
-							)}
+									/>
+								)
+							}
 							<FormInput
 								type="file"
 								accept="image/*"
-								name="file"
+								name="profilePicture"
 								containerClass="mb-3"
 								onChange={handleImageChange}
 							/>

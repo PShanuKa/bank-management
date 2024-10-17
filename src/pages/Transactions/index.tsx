@@ -1,5 +1,15 @@
 import { useAuth } from '@/common'
 import { FormInput, PageBreadcrumb } from '@/components'
+import { useGetAllAreasQuery } from '@/features/api/areaSlice'
+import { useSearchCustomerQuery } from '@/features/api/customerSlice'
+import {
+	useActionLoanMutation,
+	useCreateLoanMutation,
+	useGetAllLoanQuery,
+	useUpdateLoanMutation,
+} from '@/features/api/loanSlice'
+import { useGetSettingQuery } from '@/features/api/settingSlice'
+import { useUploadImageMutation } from '@/features/api/uploadSlice'
 import { useModal } from '@/hooks'
 
 import axios from 'axios'
@@ -16,7 +26,6 @@ import {
 	Spinner,
 	Table,
 } from 'react-bootstrap'
-import { set } from 'react-hook-form'
 
 const index = () => {
 	return (
@@ -31,30 +40,15 @@ const index = () => {
 export default index
 
 const PendingLoans = () => {
-	const [data, setData] = useState<any>([])
-	const [loading, setLoading] = useState(false)
-	const [StatusFilter, setStatusFilter] = useState('')
+	const [page] = useState(1)
+	const limit = 10000
 
-	useEffect(() => {
-		const fetchData = async () => {
-			setLoading(true)
-			try {
-				const response = await axios.get(
-					`${import.meta.env.VITE_API_URL}/api/loan?status=Pending`,
-					{
-						headers: {
-							Authorization: `Bearer YOUR_TOKEN_HERE`,
-						},
-					}
-				)
-				setData(response.data.Loans)
-			} catch (error) {
-				console.error('Error fetching data:', error)
-			}
-			setLoading(false)
-		}
-		fetchData()
-	}, [StatusFilter])
+	const { data, isLoading: loading } = useGetAllLoanQuery({
+		status: 'Pending',
+		limit,
+		page,
+	})
+
 	return (
 		<>
 			<Card>
@@ -77,7 +71,7 @@ const PendingLoans = () => {
 							</thead>
 							<tbody>
 								{!loading
-									? (data || []).map((record: any, idx: any) => {
+									? (data?.loans || []).map((record: any, idx: any) => {
 											return (
 												<tr key={idx}>
 													<td>{record.loanCode}</td>
@@ -144,30 +138,17 @@ const PendingLoans = () => {
 }
 
 const StripedRows = () => {
-	const [data, setData] = useState<any>([])
-	const [loading, setLoading] = useState(false)
-	const [StatusFilter, setStatusFilter] = useState('')
+	const [statusFilter, setStatusFilter] = useState('')
 
-	useEffect(() => {
-		const fetchData = async () => {
-			setLoading(true)
-			try {
-				const response = await axios.get(
-					`${import.meta.env.VITE_API_URL}/api/loan?status=${StatusFilter}`,
-					{
-						headers: {
-							Authorization: `Bearer YOUR_TOKEN_HERE`,
-						},
-					}
-				)
-				setData(response.data.Loans)
-			} catch (error) {
-				console.error('Error fetching data:', error)
-			}
-			setLoading(false)
-		}
-		fetchData()
-	}, [StatusFilter])
+	const [page] = useState(1)
+	const limit = 10000
+
+	const { data, isLoading: loading } = useGetAllLoanQuery({
+		status: statusFilter,
+		limit,
+		page,
+	})
+
 	return (
 		<>
 			<Card>
@@ -211,7 +192,7 @@ const StripedRows = () => {
 							</thead>
 							<tbody>
 								{!loading
-									? (data || []).map((record: any, idx: any) => {
+									? (data?.loans || []).map((record: any, idx: any) => {
 											return (
 												<tr key={idx}>
 													<td>{record.loanCode}</td>
@@ -289,12 +270,14 @@ const ModalSizes = ({
 }) => {
 	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
 		useModal()
-	const [areaData, setAreaData] = useState<any>([])
+	const { data: areaData } = useGetAllAreasQuery({ page: 1, limit: 100000 })
+
 	const [customerData, setCustomerData] = useState<any>([])
 	const [cCode, setCCode] = useState<any>('')
 	const [gCode, setGCode] = useState<any>('')
 	const [guarantorData, setGuarantorData] = useState<any>([])
 	const { token } = useAuth()
+	
 
 	const [formData, setFormData] = useState<any>({
 		location: '',
@@ -306,13 +289,27 @@ const ModalSizes = ({
 		collectWeek: '',
 		collectDay: '',
 		loanAmount: 0,
-		interestRate: 40,
-		startDate: new Date().toISOString().substr(0, 10),
+		interestRate: 0,
+		startDate: new Date().toISOString().substr(0, 10), // yyyy-mm-dd
 		endDate: '',
 		description: '',
 		loanCode: '',
 	})
-	console.log(data)
+
+	useEffect(() => {
+		if(formData.loanDuration){
+			const data = new Date(formData.startDate)
+			data.setDate(data.getDate() + Number(formData.loanDuration))
+			const endDate2 = data.toISOString().substr(0, 10)
+		
+			setFormData((prevData: any) => ({
+				...prevData,
+				endDate: endDate2,
+			})) 
+			console.log("form",formData.endDate)
+		}
+	}, [formData.loanDuration, formData.startDate])
+
 	useEffect(() => {
 		if (type === 'edit') {
 			setFormData({
@@ -350,24 +347,24 @@ const ModalSizes = ({
 		}))
 	}
 
+	const { data: customer } = useSearchCustomerQuery(cCode)
+
 	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				const response = await axios.get(
-					`${import.meta.env.VITE_API_URL}/api/area/all`,
-					{
-						headers: {
-							Authorization: `Bearer ${token}`,
-						},
-					}
-				)
-				setAreaData(response.data.areas)
-			} catch (error) {
-				console.error('Error fetching data:', error)
-			}
+		if (cCode) {
+			setCCode(customer?.customerCode)
 		}
-		fetchData()
-	}, [])
+	})
+
+	const { data: loanDays } = useGetSettingQuery(undefined)
+
+	useEffect(() => {
+		if (loanDays?.setting?.interestRate) {
+			setFormData((prevData: any) => ({
+				...prevData,
+				interestRate: loanDays?.setting?.interestRate,
+			}))
+		}
+	}, [loanDays])
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -395,7 +392,6 @@ const ModalSizes = ({
 						customerCode: '',
 					}))
 				}
-				console.log(customerData)
 			} catch (error) {
 				console.error('Error fetching data:', error)
 			}
@@ -452,38 +448,42 @@ const ModalSizes = ({
 		}
 	}, [gCode])
 
+	const [createLoan] = useCreateLoanMutation()
+	const [updateLoan] = useUpdateLoanMutation()
+
 	const onSubmit = async () => {
 		try {
-			const response = await axios.post(
-				`${import.meta.env.VITE_API_URL}/api/${
-					type === 'edit' ? `loan/update/${data._id}` : 'loan/create'
-				}`,
-				formData,
-				{
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `Bearer YOUR_TOKEN_HERE`,
-					},
-				}
-			)
-			if (response && response.data.message) {
-				toast.success(response.data.message)
+			let response
+			if (type === 'edit') {
+				response = await updateLoan({ formData, id: data._id }).unwrap()
 			} else {
-				toast.success(`Loan ${type === 'edit' ? 'updated' : 'added'}`)
+				response = await createLoan(formData).unwrap()
+				setFormData({
+					location: '',
+					customerCode: '',
+					guarantorCode: '',
+					loanDuration: 0,
+					ofInstallments: 0,
+					areaId: '',
+					collectWeek: '',
+					collectDay: '',
+					loanAmount: 0,
+					interestRate: 40,
+					startDate: new Date().toISOString().substr(0, 10),
+					endDate: '',
+					description: '',
+					loanCode: '',
+				})
 			}
-
+			toast.success(response.message)
 			toggleModal()
-		} catch (error: any) {
-			if (
-				error.response &&
-				error.response.data &&
-				error.response.data.message
-			) {
-				toast.error(error.response.data.message)
+		} catch (err: any) {
+			if (err.status === 409 || err.status === 404) {
+				toast.error(err.data.message)
 			} else {
-				toast.error('Error submitting the form')
+				console.error(err)
+				toast.error('something went wrong')
 			}
-			console.error('Error submitting the form:', error)
 		}
 	}
 
@@ -576,7 +576,7 @@ const ModalSizes = ({
 								containerClass="mb-3"
 								className="form-select">
 								<option defaultValue={''}>Choose...</option>
-								{(areaData || []).map((area: any, idx: number) => (
+								{(areaData?.areas || []).map((area: any, idx: number) => (
 									<option key={idx} value={area._id}>
 										{area.name}
 									</option>
@@ -614,22 +614,18 @@ const ModalSizes = ({
 							</h5>
 
 							<div className="my-2">
-								<Form.Check
-									type="radio"
-									id="customRadio1"
-									name="loanDuration"
-									value={65}
-									onChange={handleChange}
-									label="65 Days"
-								/>
-								<Form.Check
-									type="radio"
-									id="customRadio2"
-									value={70}
-									name="loanDuration"
-									onChange={handleChange}
-									label="70 Days"
-								/>
+								{(loanDays?.setting?.days || []).map(
+									(data: any, idx: number) => (
+										<Form.Check
+											type="radio"
+											id={String(idx)}
+											name="loanDuration"
+											value={data.day}
+											onChange={handleChange}
+											label={`${data.day} Days`}
+										/>
+									)
+								)}
 							</div>
 
 							<FormInput
@@ -673,7 +669,7 @@ const ModalSizes = ({
 								type="date"
 								name="endDate"
 								disabled
-								value={formData.startDate + formData.loanDuration}
+								value={formData.endDate}
 								onChange={handleChange}
 								containerClass="mb-3"
 							/>
@@ -739,8 +735,6 @@ const ActionModal = ({ children, data }: { children: any; data?: any }) => {
 	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
 		useModal()
 
-	const [imageLoading, setImageLoading] = useState<Boolean>(false)
-
 	const [formData, setFormData] = useState<any>({
 		description: '',
 		status: 'Approved',
@@ -754,6 +748,7 @@ const ActionModal = ({ children, data }: { children: any; data?: any }) => {
 			[name]: type === 'file' ? files[0] : value,
 		}))
 	}
+	const [action] = useActionLoanMutation()
 
 	const onSubmit = async ({ type }: any) => {
 		if (type === 'Approved') {
@@ -762,58 +757,33 @@ const ActionModal = ({ children, data }: { children: any; data?: any }) => {
 			formData.status = 'Rejected'
 		}
 		try {
-			const response = await axios.post(
-				`${import.meta.env.VITE_API_URL}/api/loan/action/${data._id}`,
-				formData,
-				{
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `Bearer YOUR_TOKEN_HERE`,
-					},
-				}
-			)
-			if (response && response.data.message) {
-				toast.success(response.data.message)
-			} else {
-				toast.success(`Loan ${type === 'edit' ? 'updated' : 'added'}`)
-			}
-
+			const response = await action({ formData, id: data?._id }).unwrap()
+			toast.success(response.message)
 			toggleModal()
 		} catch (error: any) {
-			if (
-				error.response &&
-				error.response.data &&
-				error.response.data.message
-			) {
-				toast.error(error.response.data.message)
-			} else {
-				toast.error('Error submitting the form')
-			}
+			toast.error('Error submitting the form')
 			console.error('Error submitting the form:', error)
 		}
 	}
 
+	const [uploadImage, { isLoading: imageLoading }] = useUploadImageMutation()
 	const handleImageChange = async (e: any) => {
-		// setProfilePic(e.target.files[0])
-		setImageLoading(true)
 		const formData = new FormData()
 		formData.append('file', e.target.files[0])
-		formData.append('upload_preset', 'tfrt1byi')
+		formData.append(
+			'upload_preset',
+			import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+		)
 		try {
-			const response = await axios.post(
-				'https://api.cloudinary.com/v1_1/dldtrjalo/image/upload',
-				formData
-			)
+			const response = await uploadImage(formData).unwrap()
 			setFormData((prevData: any) => ({
 				...prevData,
-				imageUrl: response.data.secure_url,
+				imageUrl: response.secure_url,
 			}))
-			toast.success('Image uploaded successfully')
 		} catch (error) {
 			toast.error('Error uploading image')
 			console.error('Error uploading image:', error)
 		}
-		setImageLoading(false)
 	}
 
 	return (
@@ -927,8 +897,6 @@ const ActionModal = ({ children, data }: { children: any; data?: any }) => {
 // 		setCCode(data.customerCode?.customerCode)
 // 		setGCode(data.guarantorCode?.guarantorCode)
 // 	}, [])
-
-	
 
 // 	useEffect(() => {
 // 		const fetchData = async () => {

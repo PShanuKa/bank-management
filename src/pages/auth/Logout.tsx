@@ -9,12 +9,17 @@ import shield from '@/assets/images/svg/shield.gif'
 
 // components
 import { PageBreadcrumb } from '@/components'
+import { useDispatch } from 'react-redux'
+import { logOut } from '@/features/reducer/authSlice'
 
 const Logout = () => {
+	const dispatch = useDispatch()
+
 	const { logout } = useAuth()
+	
 
 	useEffect(() => {
-		logout()
+		dispatch(logOut())
 	}, [logout])
 
 	const BottomLink = () => {

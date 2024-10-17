@@ -20,6 +20,9 @@ const AreaMaster = React.lazy(() => import('../pages/MasterFiles/AreaMaster'))
 const CustomerMaster = React.lazy(() => import('../pages/MasterFiles/CustomerMaster'))
 const GuarantorMaster = React.lazy(() => import('../pages/MasterFiles/GuarantorMaster'))
 const Loan = React.lazy(() => import('../pages/Transactions'))
+const LoanSetting = React.lazy(() => import('../pages/Setting/Loan'))
+const UserDashboardReport = React.lazy(() => import('../pages/Reports/UserDashboard'))
+const LoanReminder = React.lazy(() => import('../pages/Reports/LoanReminder'))
 
 
 // // pages
@@ -31,6 +34,8 @@ const MaintenancePages = React.lazy(() => import('../pages/other/Maintenance'))
 const StarterPages = React.lazy(() => import('../pages/other/Starter'))
 const ContactListPages = React.lazy(() => import('../pages/other/ContactList'))
 const TimelinePages = React.lazy(() => import('../pages/other/Timeline'))
+const LoanDetails = React.lazy(() => import('../pages/Reports/LoanDetailsReport'))
+const SingleLoan = React.lazy(() => import('../pages/Reports/LoanDetailsReport/loan'))
 
 // // base ui
 const Accordions = React.lazy(() => import('../pages/ui/Accordions'))
@@ -161,6 +166,36 @@ const dashboardRoutes: RoutesProps = {
 			element: <Loan />,
 			route: PrivateRoute,
 		},
+		{
+			path: 'setting/loan',
+			name: 'Loan',
+			element: <LoanSetting />,
+			route: PrivateRoute,
+		},
+		{
+			path: 'report/loans',
+			name: 'LoanDetails',
+			element: <LoanDetails />,
+			route: PrivateRoute,
+		},
+		{
+			path: 'report/loans/:id',
+			name: 'LoanDetails',
+			element: <SingleLoan />,
+			route: PrivateRoute,
+		},
+		{
+			path: 'report/user-dashboard',
+			name: 'user-dashboard',
+			element: <UserDashboardReport />,
+			route: PrivateRoute,
+		},
+		{
+			path: 'report/loan-reminder',
+			name: 'loan-reminder',
+			element: <LoanReminder />,
+			route: PrivateRoute,
+		}
 	],
 }
 

@@ -107,7 +107,7 @@ const ProfilePages = () => {
 										</Nav>
 										<Tab.Content className="m-0 p-4">
 											<Tab.Pane eventKey="About" id="aboutme" tabIndex={0}>
-												<div className="profile-desk">
+												<div className="profile-desk " >
 													<h5 className="text-uppercase fs-17 text-dark">
 														Johnathan Deo
 													</h5>
@@ -121,6 +121,10 @@ const ProfilePages = () => {
 														prototyping. I’ve worked with notable startups
 														including Pearl Street Software.
 													</p>
+													<Row>
+
+													<Col md={6}>
+													
 													<h5 className="mt-4 fs-17 text-dark">
 														Contact Information
 													</h5>
@@ -156,6 +160,8 @@ const ProfilePages = () => {
 															</tr>
 														</tbody>
 													</table>
+													</Col>
+													</Row>
 												</div>
 											</Tab.Pane>
 											<Tab.Pane eventKey="Activities" id="user-activities">

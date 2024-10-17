@@ -4,12 +4,14 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import AuthLayout from '../AuthLayout'
 
-
 // components
 import { VerticalForm, FormInput, PageBreadcrumb } from '@/components'
 
-import { useAuth } from '@/common'
+
 import { useMemo } from 'react'
+import { useLoginMutation } from '@/features/api/authSlice'
+import { toast } from 'material-react-toastify'
+import { useSelector } from 'react-redux'
 
 interface UserData {
 	email: string
@@ -24,8 +26,7 @@ const BottomLinks = () => {
 					Don't have an account?{' '}
 					<Link
 						to="/auth/register"
-						className="text-dark fw-bold ms-1 link-offset-3 text-decoration-underline"
-					>
+						className="text-dark fw-bold ms-1 link-offset-3 text-decoration-underline">
 						<b>Sign up</b>
 					</Link>
 				</p>
@@ -41,14 +42,11 @@ const schemaResolver = yupResolver(
 	})
 )
 
-
-
 const Login = () => {
-	const {isAuthenticated} = useAuth()
-	const { login } = useAuth()
+	const userInfo = useSelector((state:any)=>state.auth?.userInfo)
 	const navigate = useNavigate()
 	const location = useLocation()
-	
+
 	const redirectUrl = useMemo(
 		() =>
 			location.state && location.state.from
@@ -56,28 +54,39 @@ const Login = () => {
 				: '/',
 		[location.state]
 	)
+
+	const [login] = useLoginMutation()
 	
+
 	const loginHandler = async ({ email, password }: UserData) => {
-		await login(email, password)
-		navigate('/')
+		try {
+			await login({ email, password }).unwrap()
+			navigate('/')
+		} catch (err: any) {
+			if (err.status === 404) {
+				toast.success('Invalid credentials')
+			} else {
+				toast.error('something went wrong')
+				console.error(err)
+			}
+		}
 	}
+
 	return (
 		<>
 			<PageBreadcrumb title="Log In" />
 
-			{isAuthenticated && <Navigate to={redirectUrl} replace />}
+			{userInfo && <Navigate to={redirectUrl} replace />}
 
 			<AuthLayout
 				authTitle="Sign In"
 				helpText="Enter your email address and password to access account."
 				bottomLinks={<BottomLinks />}
-				hasThirdPartyLogin
-			>
+				hasThirdPartyLogin>
 				<VerticalForm<UserData>
 					onSubmit={loginHandler}
 					resolver={schemaResolver}
-					defaultValues={{ email: 'admin5@gmail.com', password: 'admin1234' }}
-				>
+					defaultValues={{ email: 'admin5@gmail.com', password: 'admin1234' }}>
 					<FormInput
 						label="Email address"
 						type="text"
@@ -93,8 +102,7 @@ const Login = () => {
 						required
 						id="password"
 						placeholder="Enter your password"
-						containerClass="mb-3"
-					>
+						containerClass="mb-3">
 						{/* <Link to="/auth/forgot-password" className="text-muted float-end">
 							<small>Forgot your password?</small>
 						</Link> */}
@@ -111,7 +119,7 @@ const Login = () => {
 							className="w-100"
 							type="submit"
 							// disabled={loading}
-						>
+						>	
 							<i className="ri-login-circle-fill me-1" />{' '}
 							<span className="fw-bold">Log In</span>{' '}
 						</Button>

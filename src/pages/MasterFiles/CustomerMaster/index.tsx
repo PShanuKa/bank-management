@@ -1,8 +1,13 @@
-import { useAuth } from '@/common'
 import { FormInput, PageBreadcrumb } from '@/components'
+import { useGetAllAreasQuery } from '@/features/api/areaSlice'
+import {
+	useCreateCustomerMutation,
+	useGetAllCustomersQuery,
+	useUpdateCustomerMutation,
+} from '@/features/api/customerSlice'
+import { useUploadImageMutation } from '@/features/api/uploadSlice'
 import { useModal } from '@/hooks'
 
-import axios from 'axios'
 import { toast } from 'material-react-toastify'
 import { useEffect, useState } from 'react'
 
@@ -28,30 +33,10 @@ const index = () => {
 export default index
 
 const StripedRows = () => {
-	const [data, setData] = useState<any>([])
-	const { token } = useAuth()
-	const [loading, setLoading] = useState(false)
+	const [page] = useState(1)
+	const limit = 10000
 
-	useEffect(() => {
-		const fetchData = async () => {
-			setLoading(true)
-			try {
-				const response = await axios.get(
-					`${import.meta.env.VITE_API_URL}/api/customer/all-customers`,
-					{
-						headers: {
-							Authorization: `Bearer ${token}`,
-						},
-					}
-				)
-				setData(response.data.customers)
-			} catch (error) {
-				console.error('Error fetching data:', error)
-			}
-			setLoading(false)
-		}
-		fetchData()
-	}, [])
+	const { data, isLoading: loading } = useGetAllCustomersQuery({ page, limit })
 
 	return (
 		<>
@@ -77,7 +62,7 @@ const StripedRows = () => {
 							</thead>
 							<tbody>
 								{!loading
-									? (data || []).map((record: any, idx: number) => {
+									? (data?.customers || []).map((record: any, idx: number) => {
 											return (
 												<tr key={idx}>
 													<td className="table-user">
@@ -157,6 +142,7 @@ const ModalSizes = ({
 	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
 		useModal()
 
+	const [uploadImage] = useUploadImageMutation()
 	const [imageLoading, setImageLoading] = useState<any>({
 		profilePicture: false,
 		homeImage: false,
@@ -210,28 +196,8 @@ const ModalSizes = ({
 				signatureImage: data.signatureImage,
 			})
 		}
-		console.log(data)
 	}, [])
-
-	const [areaData, setAreaData] = useState<any>([])
-	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				const response = await axios.get(
-					`${import.meta.env.VITE_API_URL}/api/area/all`,
-					{
-						headers: {
-							Authorization: `Bearer YOUR_TOKEN_HERE`,
-						},
-					}
-				)
-				setAreaData(response.data.areas)
-			} catch (error) {
-				console.error('Error fetching data:', error)
-			}
-		}
-		fetchData()
-	}, [])
+	const { data: areaData } = useGetAllAreasQuery({ page: 1, limit: 100000 })
 
 	const handleImageChange = async (e: any) => {
 		setImageLoading((prev: any) => ({
@@ -240,26 +206,22 @@ const ModalSizes = ({
 		}))
 		const formData = new FormData()
 		formData.append('file', e.target.files[0])
-		formData.append('upload_preset', 'tfrt1byi')
+		formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET)
 		try {
-			const response = await axios.post(
-				'https://api.cloudinary.com/v1_1/dldtrjalo/image/upload',
-				formData
-			)
+			const response = await uploadImage(formData).unwrap()
 			setFormData((prevData: any) => ({
 				...prevData,
-				[e.target.name]: response.data.secure_url,
+				[e.target.name]: response.secure_url,
 			}))
-			toast.success('Image uploaded successfully')
+			
 		} catch (error) {
 			toast.error('Error uploading image')
 			console.error('Error uploading image:', error)
-		} finally {
-			setImageLoading((prev: any) => ({
-				...prev,
-				[e.target.name]: false,
-			}))
 		}
+		setImageLoading((prev: any) => ({
+			...prev,
+			[e.target.name]: false,
+		}))
 	}
 
 	const handleChange = (e: any) => {
@@ -278,40 +240,48 @@ const ModalSizes = ({
 			customerCode: code,
 		}))
 	}
+	const [createCustomer] = useCreateCustomerMutation()
+	const [updateCustomer] = useUpdateCustomerMutation()
 
 	const onSubmit = async () => {
 		try {
-			const response = await axios.post(
-				`${import.meta.env.VITE_API_URL}/api/${
-					type === 'edit' ? `customer/update/${data._id}` : 'customer/create'
-				}`,
-				formData,
-				{
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `Bearer YOUR_TOKEN_HERE`,
-					},
-				}
-			)
-
-			if (response && response.data.message) {
-				toast.success(response.data.message)
+			let response
+			if (type === 'edit') {
+				response = await updateCustomer({ formData, id: data._id }).unwrap()
 			} else {
-				toast.success(`Customer ${type === 'edit' ? 'updated' : 'added'}`)
+				response = await createCustomer(formData).unwrap()
+				setFormData({
+					loanCode: '',
+					customerCode: '',
+					nic: '',
+					location: '',
+					areaCode: '',
+					firstName: '',
+					surName: '',
+					address: '',
+					number: '',
+					gender: '',
+					dateOfBirth: '',
+					civilStatus: '',
+					income: '',
+					homeFullIncome: '',
+					profilePicture: '',
+					homeImage: '',
+					billImage: '',
+					paySheetImage: '',
+					signatureImage: '',
+				})
 			}
+			toast.success(response.message)
 
 			toggleModal()
-		} catch (error: any) {
-			if (
-				error.response &&
-				error.response.data &&
-				error.response.data.message
-			) {
-				toast.error(error.response.data.message)
+		} catch (err: any) {
+			if (err.status === 409 || err.status === 404) {
+				toast.error(err.data.message)
 			} else {
-				toast.error('Error submitting the form')
+				console.error(err)
+				toast.error('something went wrong')
 			}
-			console.error('Error submitting the form:', error)
 		}
 	}
 
@@ -321,7 +291,6 @@ const ModalSizes = ({
 				<div onClick={() => openModalWithSize('lg')} className="flex">
 					<>{children}</>
 				</div>
-
 				<Modal
 					className="fade"
 					show={isOpen}
@@ -349,8 +318,9 @@ const ModalSizes = ({
 							value={formData.customerCode}
 							onChange={handleChange}
 						/>
-						<Button onClick={GenerateCode} className='mb-3'>Generate Code</Button>
-						
+						<Button onClick={GenerateCode} className="mb-3">
+							Generate Code
+						</Button>
 						<FormInput
 							label="NIC Number"
 							type="text"
@@ -366,11 +336,12 @@ const ModalSizes = ({
 							value={formData.location}
 							containerClass="mb-3"
 							className="form-select"
-							onChange={handleChange}
-						>
+							onChange={handleChange}>
 							<option value="">Select Location</option>
-							{areaData.map((area: any) => (
-								<option key={area._id} value={area._id}>{area.name}</option>
+							{(areaData?.areas || []).map((area: any) => (
+								<option key={area._id} value={area._id}>
+									{area.name}
+								</option>
 							))}
 						</FormInput>
 

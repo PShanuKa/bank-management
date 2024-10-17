@@ -82,7 +82,13 @@ const MENU_ITEMS: MenuItemTypes[] = [
 			{
 				key: 'loan-detailed-report',
 				label: 'Loan Detailed Report',
-				url: '/reports/starter',
+				url: '/report/loans',
+				parentKey: 'reports',
+			},
+			{
+				key: 'User Dashboard',
+				label: 'User Dashboard Report',
+				url: '/report/user-dashboard',
 				parentKey: 'reports',
 			},
 			{
@@ -92,21 +98,9 @@ const MENU_ITEMS: MenuItemTypes[] = [
 				parentKey: 'reports',
 			},
 			{
-				key: 'area-report',
-				label: 'Area Report',
-				url: '/reports/area-report',
-				parentKey: 'reports',
-			},
-			{
-				key: 'target-report',
-				label: 'Target Report',
-				url: '/reports/target-report',
-				parentKey: 'reports',
-			},
-			{
 				key: 'loan-reminder',
 				label: 'Loan Reminder',
-				url: '/reports/loan-reminder',
+				url: '/report/loan-reminder',
 				parentKey: 'reports',
 			},
 			{
@@ -132,7 +126,7 @@ const MENU_ITEMS: MenuItemTypes[] = [
 			{
 				key: 'loan-settings',
 				label: 'Loan Settings',
-				url: '/setting/loan-settings',
+				url: '/setting/loan',
 				parentKey: 'setting',
 			},
 		]

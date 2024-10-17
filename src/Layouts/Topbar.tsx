@@ -1,5 +1,5 @@
 import { Image } from 'react-bootstrap'
-import { ThemeSettings, useAuth, useThemeContext } from '@/common'
+import { ThemeSettings, useThemeContext } from '@/common'
 import { Link } from 'react-router-dom'
 
 import logo from '@/assets/images/logo.png'
@@ -9,6 +9,7 @@ import logoDark from '@/assets/images/logo-dark.png'
 import { ProfileDropdown } from '@/components'
 import { useThemeCustomizer } from '@/components'
 import { useViewport } from '@/hooks'
+import { useSelector } from 'react-redux'
 
 export interface ProfileOption {
 	label: string
@@ -93,7 +94,8 @@ const Topbar = ({ toggleMenu, navOpen }: TopbarProps) => {
 		}
 	}
 	const { settings, updateSettings, updateSidebar } = useThemeContext()
-	const { user } = useAuth()
+	
+	const userInfo = useSelector((state:any)=>state.auth?.userInfo)
 
 	/**
 	 * Toggle Dark Mode
@@ -173,8 +175,8 @@ const Topbar = ({ toggleMenu, navOpen }: TopbarProps) => {
 						<li className="dropdown">
 							<ProfileDropdown
 								menuItems={profileMenus}
-								userImage={user.profilePicture ? user.profilePicture : null}
-								username={user ? user.firstName + ' ' + user.surName : ''}
+								userImage={userInfo.profilePicture ? userInfo.profilePicture : null}
+								username={userInfo ? userInfo.firstName + ' ' + userInfo.surName : ''}
 							/>
 						</li>
 					</ul>

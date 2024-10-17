@@ -12,9 +12,9 @@ import {
 } from './index'
 import {
 	ThemeSettings,
-	useAuth,
 	useThemeContext,
 } from '../common/context'
+import { useSelector } from 'react-redux'
 
 
 interface IRoutesProps {}
@@ -27,7 +27,7 @@ const AllRoutes = (props: IRoutesProps) => {
 			: HorizontalLayout
 	// const api = new APICore()
 
-	const { isAuthenticated } = useAuth()
+	const userInfo = useSelector((state:any)=>state.auth?.userInfo)
 	
 
 
@@ -51,7 +51,7 @@ const AllRoutes = (props: IRoutesProps) => {
 						<Route
 							path={route.path}
 							element={
-								isAuthenticated === false ? (
+								!userInfo ? (
 									<Navigate
 										to={{
 											pathname: '/auth/login'

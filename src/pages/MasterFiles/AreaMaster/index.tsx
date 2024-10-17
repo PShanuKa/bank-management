@@ -1,8 +1,8 @@
-import { useAuth } from '@/common'
-import { FormInput, PageBreadcrumb } from '@/components'
-import { useModal } from '@/hooks'
 
-import axios from 'axios'
+import { FormInput, PageBreadcrumb } from '@/components'
+import { useAreaCreateMutation, useAreaUpdateMutation, useGetAllAreasQuery } from '@/features/api/areaSlice'
+import { useGetAllEmployeesQuery } from '@/features/api/employeeSlice'
+import { useModal } from '@/hooks'
 import { toast } from 'material-react-toastify'
 import { useEffect, useState } from 'react'
 
@@ -20,29 +20,7 @@ const index = () => {
 export default index
 
 const StripedRows = () => {
-	const [data, setData] = useState<any>([])
-	const [loading, setLoading] = useState(false)
-
-	useEffect(() => {
-		const fetchData = async () => {
-			setLoading(true)
-			try {
-				const response = await axios.get(
-					`${import.meta.env.VITE_API_URL}/api/area/all`,
-					{
-						headers: {
-							Authorization: `Bearer YOUR_TOKEN_HERE`,
-						},
-					}
-				)
-				setData(response.data.areas)
-			} catch (error) {
-				console.error('Error fetching data:', error)
-			}
-			setLoading(false)
-		}
-		fetchData()
-	}, [])
+	const {data, isLoading: loading} = useGetAllAreasQuery({page:1, limit:100000})
 	return (
 		<>
 			<Card>
@@ -66,7 +44,7 @@ const StripedRows = () => {
 							</thead>
 							<tbody>
 								{!loading
-									? (data || []).map((record: any, idx: any) => {
+									? (data.areas || []).map((record: any, idx: any) => {
 											return (
 												<tr key={idx}>
 													<td className="table-user">&nbsp;{record.name}</td>
@@ -137,12 +115,13 @@ const ModalSizes = ({
 }) => {
 	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
 		useModal()
-	const [userData, setUserData] = useState<any>([])
-	const { token } = useAuth()
 	
-	const [formData, setFormData] = useState({
+	
+	const [createArea] = useAreaCreateMutation()
+	const [updateArea] = useAreaUpdateMutation()
+	
+	const [formData, setFormData] = useState<any>({
 		name: '',
-		
 		date: '',
 		employeeId: '',
 	})
@@ -167,54 +146,36 @@ const ModalSizes = ({
 		}))
 	}
 
-	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				const response = await axios.get(
-					`${import.meta.env.VITE_API_URL}/api/user/all-users`,
-					{
-						headers: {
-							Authorization: `Bearer ${token}`,
-						},
-					}
-				)
-				setUserData(response.data.users)
-			} catch (error) {
-				console.error('Error fetching data:', error)
-			}
-		}
-		fetchData()
-	}, [])
+	const [page] = useState(1)
+	const limit = 10000
+
+	const { data:userData } = useGetAllEmployeesQuery({ page, limit })
+	
 
 	const onSubmit = async () => {
 		try {
-			const response = await axios.post(
-				`${import.meta.env.VITE_API_URL}/api/${
-					type === 'edit' ? `area/update/${data._id}` : 'area/create'
-				}`,
-				formData,
-				{
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `Bearer YOUR_TOKEN_HERE`,
-					},
-				}
-			)
-			if (response && response.data.message) {
-				toast.success(response.data.message);
-			} else {
-				
-				toast.success(`Area ${type === 'edit' ? 'updated' : 'added'}`)
+			let response 
+			if(type === 'edit'){
+				response = await updateArea({formData, id: data._id}).unwrap()
+			}else {
+				response = await createArea(formData).unwrap()
+				setFormData({
+					name: '',
+					date: '',
+					employeeId: '',
+				})
 			}
-
+			toast.success(response.message)
 			toggleModal()
-		} catch (error:any) {
-			if (error.response && error.response.data && error.response.data.message) {
-				toast.error(error.response.data.message);
-			} else {
-				toast.error('Error submitting the form');
+		} catch (err:any) {
+			if(err.status === 400){
+				toast.error(err.data.message)
+			}else if (err.status === 500) {
+				console.log(err)
+			}else{
+				console.log(err)
+				toast.error("Something went wrong")
 			}
-			console.error('Error submitting the form:', error)
 		}
 	}
 
@@ -261,11 +222,11 @@ const ModalSizes = ({
 								type="select"
 								containerClass="mb-3"
 								className="form-select"
-								value={formData.employeeId}
+								value={formData?.employeeId?._id}
 								onChange={handleChange}>
-								<option defaultValue={''}>Select..</option>
+								<option defaultValue={''} value={''}>Select..</option>
 
-								{(userData || []).map((record: any, idx: number) => (
+								{(userData?.users || []).map((record: any, idx: number) => (
 									<option key={idx} value={record._id}>
 										{record.firstName}
 									</option>

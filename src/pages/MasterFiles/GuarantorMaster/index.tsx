@@ -1,10 +1,10 @@
-import { useAuth } from '@/common'
 import { FormInput, PageBreadcrumb } from '@/components'
+import { useCreateGuarantorMutation, useGetAllGuarantorsQuery, useUpdateGuarantorMutation } from '@/features/api/guarantorSlice'
+import { useUploadImageMutation } from '@/features/api/uploadSlice'
 import { useModal } from '@/hooks'
-import axios from 'axios'
 import { toast } from 'material-react-toastify'
 import { useEffect, useState } from 'react'
-import { Button, Card, Image, Modal, Placeholder, Table } from 'react-bootstrap'
+import { Button, Card, Image, Modal, Placeholder, Spinner, Table } from 'react-bootstrap'
 
 const index = () => {
 	return (
@@ -18,31 +18,13 @@ const index = () => {
 export default index
 
 const StripedRows = () => {
-	const [data, setData] = useState<any>([])
-	const { token } = useAuth()
-	const [loading, setLoading] = useState(false)
+	
 
-	useEffect(() => {
-		const fetchData = async () => {
-			setLoading(true)
-			try {
-				const response = await axios.get(
-					`${import.meta.env.VITE_API_URL}/api/guarantor/all`,
-					{
-						headers: {
-							Authorization: `Bearer ${token}`,
-						},
-					}
-				)
-				setData(response.data.guarantors)
-				
-			} catch (error) {
-				console.error('Error fetching data:', error)
-			}
-			setLoading(false)
-		}
-		fetchData()
-	}, [])
+	const [page] = useState(1)
+	const limit = 10000
+
+	const { data, isLoading: loading } = useGetAllGuarantorsQuery({ page, limit })
+
 	return (
 		<>
 			<Card>
@@ -66,7 +48,7 @@ const StripedRows = () => {
 							</thead>
 							<tbody>
 								{!loading
-									? (data || []).map((record: any, idx: number) => {
+									? (data?.guarantors || []).map((record: any, idx: number) => {
 											return (
 												<tr key={idx}>
 													<td className="table-user">
@@ -144,7 +126,7 @@ const ModalSizes = ({
 }) => {
 	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
 		useModal()
-	const [profilePic, setProfilePic] = useState<any>(null)
+	// const [imageLoading, setImageLoading] = useState<Boolean>(false)
 
 	const [formData, setFormData] = useState({
 		nic: '',
@@ -168,6 +150,27 @@ const ModalSizes = ({
 		}))
 	}
 
+	const [uploadImage, {isLoading:imageLoading} ] = useUploadImageMutation()
+
+
+	const handleImageChange = async (e: any) => {
+		
+		const formData = new FormData()
+		formData.append('file', e.target.files[0])
+		formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET)
+		try {
+			const response = await uploadImage(formData).unwrap()
+			setFormData((prevData: any) => ({
+				...prevData,
+				profilePicture: response.secure_url,
+			}))
+		} catch (error) {
+			toast.error('Error uploading image')
+			console.error('Error uploading image:', error)
+		}
+		
+	}
+
 	useEffect(() => {
 		if (type === 'edit') {
 			setFormData({
@@ -186,31 +189,9 @@ const ModalSizes = ({
 		}
 	}, [])
 
-	const handleImageChange = (e: any) => {
-		setProfilePic(e.target.files[0])
-	}
+	
 
-	const handleImageUpload = async () => {
-		const formData = new FormData()
-		formData.append('file', profilePic)
-		formData.append('upload_preset', 'tfrt1byi')
-
-		try {
-			const response = await axios.post(
-				'https://api.cloudinary.com/v1_1/dldtrjalo/image/upload',
-
-				formData
-			)
-			setFormData((prevData: any) => ({
-				...prevData,
-				profilePicture: response.data.secure_url,
-			}))
-			toast.success('Image uploaded successfully')
-		} catch (error) {
-			toast.error('Error uploading image')
-			console.error('Error uploading image:', error)
-		}
-	}
+	
 
 	const handleChange = (e: any) => {
 		const { name, value, type, files } = e.target
@@ -221,35 +202,39 @@ const ModalSizes = ({
 		}))
 	}
 
+
+	const [createGuarantor] = useCreateGuarantorMutation()
+	const [updateGuarantor] = useUpdateGuarantorMutation()
 	const onSubmit = async () => {
 		try {
-			const response = await axios.post(
-				`${import.meta.env.VITE_API_URL}/api/${
-					type === 'edit' ? `guarantor/update/${data._id}` : 'guarantor/create'
-				}`,
-				formData,
-				{
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `Bearer YOUR_TOKEN_HERE`,
-					},
-				}
-			)
-			if (response && response.data.message) {
-				toast.success(response.data.message);
+			let response
+			if (type === 'edit') {
+				response = await updateGuarantor({ formData, id: data._id }).unwrap()
 			} else {
-				
-				toast.success(`Guarantor ${type === 'edit' ? 'updated' : 'added'}`)
+				response = await createGuarantor(formData).unwrap()
+				setFormData({
+					nic: '',
+					location: '',
+					firstName: '',
+					surName: '',
+					address: '',
+					number: '',
+					gender: '',
+					dateOfBirth: '',
+					civilStatus: '',
+					profilePicture: '',
+					guarantorCode: ''
+				})
 			}
-
+			toast.success(response.message)
 			toggleModal()
-		} catch (error:any) {
-			if (error.response && error.response.data && error.response.data.message) {
-				toast.error(error.response.data.message);
+		} catch (err: any) {
+			if (err.status === 409 || err.status === 404) {
+				toast.error(err.data.message)
 			} else {
-				toast.error('Error submitting the form');
+				console.error(err)
+				toast.error('something went wrong')
 			}
-			console.error('Error submitting the form:', error)
 		}
 	}
 	return (
@@ -363,23 +348,22 @@ const ModalSizes = ({
 							<option value="widowed">Widowed</option>
 						</FormInput>
 						<h4 className="header-title">Uploads</h4>
-						{formData.profilePicture && (
-							<Image
-								src={formData.profilePicture}
-								alt="avatar"
-								className="img-fluid avatar-lg rounded"
+						<h5>Profile Picture</h5>
+							{imageLoading && <Spinner className="m-2" />}
+							{formData.profilePicture && (
+								<Image
+									src={formData.profilePicture}
+									alt="avatar"
+									className="img-fluid avatar-lg rounded"
+								/>
+							)}
+							<FormInput
+								type="file"
+								accept="image/*"
+								name="file"
+								containerClass="mb-3"
+								onChange={handleImageChange}
 							/>
-						)}
-						<FormInput
-							label="Profile Picture"
-							type="file"
-							name="file"
-							containerClass="mb-3"
-							onChange={handleImageChange}
-						/>
-						<Button className="mb-3" onClick={handleImageUpload}>
-							Upload Pic
-						</Button>
 					</Modal.Body>
 					<Modal.Footer>
 						<Button variant="light" onClick={onSubmit}>
