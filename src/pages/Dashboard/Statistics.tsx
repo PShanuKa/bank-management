@@ -27,7 +27,7 @@ const Statistics = ({
 				<p className="mb-0">
 					<span className="badge bg-white bg-opacity-10 me-1">{change}</span>
 					&nbsp;
-					<span className="text-nowrap">Since last month</span>
+					<span className="text-nowrap">APPLE INVENSTMENT</span>
 				</p>
 			</Card.Body>
 		</Card>

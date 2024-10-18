@@ -13,8 +13,8 @@ export const authSlice = createSlice({
         setUser: (state, action) => {
             if (action.payload) {
                 localStorage.setItem("userInfo", JSON.stringify(action.payload.userInfo));
-                localStorage.setItem("Bearer", JSON.stringify(action.payload.token));
-                state.userInfo = action.payload;
+                localStorage.setItem("Bearer", (action.payload.token));
+                state.userInfo = action.payload.userInfo;
             }else{
                 localStorage.removeItem("userInfo");
                 localStorage.removeItem("Bearer");

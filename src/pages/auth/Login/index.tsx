@@ -7,11 +7,11 @@ import AuthLayout from '../AuthLayout'
 // components
 import { VerticalForm, FormInput, PageBreadcrumb } from '@/components'
 
-
 import { useMemo } from 'react'
 import { useLoginMutation } from '@/features/api/authSlice'
 import { toast } from 'material-react-toastify'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { setUser } from '@/features/reducer/authSlice'
 
 interface UserData {
 	email: string
@@ -43,10 +43,10 @@ const schemaResolver = yupResolver(
 )
 
 const Login = () => {
-	const userInfo = useSelector((state:any)=>state.auth?.userInfo)
+	const userInfo = useSelector((state: any) => state.auth?.userInfo)
 	const navigate = useNavigate()
 	const location = useLocation()
-
+	const dispatch = useDispatch()
 	const redirectUrl = useMemo(
 		() =>
 			location.state && location.state.from
@@ -56,11 +56,12 @@ const Login = () => {
 	)
 
 	const [login] = useLoginMutation()
-	
 
 	const loginHandler = async ({ email, password }: UserData) => {
 		try {
-			await login({ email, password }).unwrap()
+			const data = await login({ email, password }).unwrap()
+			dispatch(setUser(data))
+			console.log(data)
 			navigate('/')
 		} catch (err: any) {
 			if (err.status === 404) {
@@ -119,7 +120,7 @@ const Login = () => {
 							className="w-100"
 							type="submit"
 							// disabled={loading}
-						>	
+						>
 							<i className="ri-login-circle-fill me-1" />{' '}
 							<span className="fw-bold">Log In</span>{' '}
 						</Button>

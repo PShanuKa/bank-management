@@ -15,15 +15,18 @@ import { useModal } from '@/hooks'
 import { useSelector } from 'react-redux'
 
 const Projects = () => {
-	const userId =useSelector((state: any) => state.auth.userInfo?._id)
+	const userId =useSelector((state: any) => state?.auth?.userInfo)
 	const [statusFilter , setStatusFilter] = useState('')
 	const [page] = useState(1)
 	const limit = 10000
 	const { data } = useGetAllUserTaskQuery({ search: statusFilter, page, limit })
+	
 	useEffect(() => {
-		setStatusFilter('')
-		// setStatusFilter(userId)
+		if(!userId.isAdmin){
+			setStatusFilter(userId._id)
+		}
 	},[userId])
+
 
 	return (
 		<CustomCardPortlet cardTitle="Collection Report" titleClass="header-title">

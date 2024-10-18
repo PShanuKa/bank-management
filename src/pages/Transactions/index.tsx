@@ -26,12 +26,15 @@ import {
 	Spinner,
 	Table,
 } from 'react-bootstrap'
+import { useSelector } from 'react-redux'
 
 const index = () => {
+	const user = useSelector((state: any) => state?.auth?.userInfo);
 	return (
 		<>
 			<PageBreadcrumb title="Loans" subName="Transactions" />
-			<PendingLoans />
+			{user?.isAdmin && <PendingLoans />}
+			
 			<StripedRows />
 		</>
 	)
@@ -49,6 +52,7 @@ const PendingLoans = () => {
 		page,
 	})
 
+	
 	return (
 		<>
 			<Card>
@@ -154,6 +158,7 @@ const PendingLoans = () => {
 
 const StripedRows = () => {
 	const [statusFilter, setStatusFilter] = useState('')
+	const user = useSelector((state: any) => state?.auth?.userInfo);
 
 	const [page] = useState(1)
 	const limit = 10000
@@ -175,6 +180,7 @@ const StripedRows = () => {
 				</Card.Header>
 				<Card.Body>
 					<div style={{ maxWidth: '300px' }}>
+						{user?.isAdmin &&
 						<FormInput
 							label="Loan Status"
 							type="select"
@@ -190,6 +196,7 @@ const StripedRows = () => {
 							<option value="Finished">Finished</option>
 							<option value="Rejected">Rejected</option>
 						</FormInput>
+						 }
 					</div>
 					<div className="table-responsive-sm">
 						<Table className="table-striped table-centered mb-0">

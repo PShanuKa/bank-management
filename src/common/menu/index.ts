@@ -1,12 +1,23 @@
 import {
 	HORIZONTAL_MENU_ITEMS,
 	MENU_ITEMS,
+	ADMIN_MENU_ITEMS,
 	MenuItemTypes,
 } from '@/constants/menu'
+import { useSelector } from 'react-redux';
 const getMenuItems = () => {
-	// NOTE - You can fetch from server and return here as well
-	return MENU_ITEMS
-}
+	const user = useSelector((state: any) => state?.auth?.userInfo);
+
+	if (user?.isAdmin) {
+		return ADMIN_MENU_ITEMS
+	} else {
+		
+		// NOTE - You can fetch from server and return here as well
+		return MENU_ITEMS
+	}
+		
+	}
+
 
 const getHorizontalMenuItems = () => {
 	// NOTE - You can fetch from server and return here as well
