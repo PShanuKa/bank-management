@@ -2,7 +2,7 @@ import { Col, Row } from 'react-bootstrap'
 import Statistics from './Statistics'
 import Projects from './Projects'
 import { PageBreadcrumb } from '@/components'
-import { statistics } from './data'
+
 import { useSelector } from 'react-redux'
 import { useEffect, useState } from 'react'
 import { useGetAllUserTaskQuery } from '@/features/api/userTaskSlice'
@@ -15,7 +15,7 @@ const Dashboard = () => {
 	const { data } = useGetAllUserTaskQuery({ search: statusFilter, page, limit })
 
 	const [last30DaysIncome, setLast30DaysIncome] = useState(0)
-	const [todayIncome, setTodayIncome] = useState(0)
+
 	const [last7DaysIncome, setLast7DaysIncome] = useState(0)
 
 	useEffect(() => {
