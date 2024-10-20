@@ -107,11 +107,14 @@ const MenuItem = ({ item, className, linkClassName }: SubMenus) => {
 }
 
 const MenuItemLink = ({ item, className }: SubMenus) => {
+	const path = useLocation().pathname.split('/')[2]
+	const url = item.url?.split('/')[2]
+	console.log(path, url)
 	return (
 		<Link
 			to={item.url!}
 			target={item.target}
-			className={`side-nav-link-ref ${className}`}
+			className={`side-nav-link-ref ${className} ${path === url ? 'bg-primary bg-opacity-10' : ''}`}
 			data-menu-key={item.key}
 		>
 			{item.icon && <i className={item.icon} />}

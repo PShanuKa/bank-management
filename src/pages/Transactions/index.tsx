@@ -333,6 +333,7 @@ const ModalSizes = ({
 
 	const [cCode, setCCode] = useState<string>('')
 	const [gCode, setGCode] = useState<string>('')
+	const [status, setStatus] = useState<string>('')
 
 	const [formData, setFormData] = useState<any>({
 		location: '',
@@ -380,6 +381,7 @@ const ModalSizes = ({
 				description: data.description,
 				loanCode: data.loanCode,
 			})
+			setStatus(data?.status)
 			setCCode(data.customerCode?.customerCode)
 			setGCode(data.guarantorCode?.guarantorCode)
 		}
@@ -715,12 +717,14 @@ const ModalSizes = ({
 						<Button variant="light" onClick={toggleModal}>
 							Close
 						</Button>{' '}
-						<Button onClick={onSubmit}>
-							{(createLoading || updateLoading) && (
-								<Spinner size="sm" className="me-2" />
-							)}
-							Save changes
-						</Button>
+						{(status === '' || status === 'Pending') && (
+							<Button onClick={onSubmit}>
+								{(createLoading || updateLoading) && (
+									<Spinner size="sm" className="me-2" />
+								)}
+								Save changes
+							</Button>
+						)}
 					</Modal.Footer>
 				</Modal>
 			</div>
@@ -789,7 +793,6 @@ const ActionModal = ({ children, data }: { children: any; data?: any }) => {
 				<div onClick={() => openModalWithSize('lg')} className="flex">
 					<>{children}</>
 				</div>
-
 				<Modal
 					className="fade"
 					show={isOpen}
@@ -840,7 +843,6 @@ const ActionModal = ({ children, data }: { children: any; data?: any }) => {
 						<Button
 							onClick={() => onSubmit({ type: 'Approved' })}
 							variant="success">
-							
 							Approved
 						</Button>
 						{actionLoading && <Spinner size="sm" className="me-2" />}

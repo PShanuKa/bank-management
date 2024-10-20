@@ -109,12 +109,12 @@ const ADMIN_MENU_ITEMS: MenuItemTypes[] = [
 		isTitle: false,
 		icon: 'ri-file-settings-line',
 		children: [
-			{
-				key: 'user-permissions',
-				label: 'User Permissions',
-				url: '/setting/user-permissions',
-				parentKey: 'setting',
-			},
+			// {
+			// 	key: 'user-permissions',
+			// 	label: 'User Permissions',
+			// 	url: '/setting/user-permissions',
+			// 	parentKey: 'setting',
+			// },
 			{
 				key: 'loan-settings',
 				label: 'Loan Settings',
