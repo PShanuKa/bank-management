@@ -5,12 +5,11 @@ import {
 } from '@/features/api/settingSlice'
 import { toast } from 'material-react-toastify'
 import { useEffect, useState } from 'react'
-import { Button, Card, Col, Row, Table } from 'react-bootstrap'
+import { Button, Card, Col, Row, Spinner, Table } from 'react-bootstrap'
 
 const index = () => {
 	const [interestRate, setInterestRate] = useState<Number>(0)
-
-	const [updateSetting, { isError, isSuccess, error }] =
+	const [updateSetting, { isLoading , isError, isSuccess, error }] =
 		useUpdateSettingMutation()
 	const { data } = useGetSettingQuery(undefined)
 
@@ -46,6 +45,7 @@ const index = () => {
 					<Button
 						variant="primary"
 						onClick={() => updateSetting({ interestRate })}>
+						{isLoading && <Spinner size='sm'  className='me-2' />}
 						Submit
 					</Button>
 				</Col>
@@ -65,7 +65,7 @@ const BorderedTable = () => {
 	const { data } = useGetSettingQuery(undefined)
 
 	const [day, setDay] = useState<Number>()
-	const [updateSetting, { isError, isSuccess, error }] = useUpdateSettingMutation()
+	const [updateSetting, { isLoading ,isError, isSuccess, error }] = useUpdateSettingMutation()
 
 	useEffect(() => {
 		if (isSuccess) {
@@ -151,6 +151,7 @@ const BorderedTable = () => {
 							</tbody>
 						</Table>
 						<Button variant="primary" className='mt-3' onClick={updateSettingHandler}>
+						{ isLoading && <Spinner size='sm' className='me-2' /> }
 							Save Changes
 						</Button>
 					</div>

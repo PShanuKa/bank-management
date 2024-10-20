@@ -1,7 +1,8 @@
-import { useAuth } from '@/common'
 import { FormInput, PageBreadcrumb } from '@/components'
+import PaginationWithStates from '@/components/Pagination'
 import { useGetAllAreasQuery } from '@/features/api/areaSlice'
 import { useSearchCustomerQuery } from '@/features/api/customerSlice'
+import { useSearchGuarantorQuery } from '@/features/api/guarantorSlice'
 import {
 	useActionLoanMutation,
 	useCreateLoanMutation,
@@ -12,7 +13,6 @@ import { useGetSettingQuery } from '@/features/api/settingSlice'
 import { useUploadImageMutation } from '@/features/api/uploadSlice'
 import { useModal } from '@/hooks'
 
-import axios from 'axios'
 import { toast } from 'material-react-toastify'
 import { useEffect, useState } from 'react'
 
@@ -29,12 +29,12 @@ import {
 import { useSelector } from 'react-redux'
 
 const index = () => {
-	const user = useSelector((state: any) => state?.auth?.userInfo);
+	const user = useSelector((state: any) => state?.auth?.userInfo)
 	return (
 		<>
 			<PageBreadcrumb title="Loans" subName="Transactions" />
 			{user?.isAdmin && <PendingLoans />}
-			
+
 			<StripedRows />
 		</>
 	)
@@ -43,8 +43,8 @@ const index = () => {
 export default index
 
 const PendingLoans = () => {
-	const [page] = useState(1)
-	const limit = 10000
+	const [page, setPage] = useState(1)
+	const limit = 20
 
 	const { data, isLoading: loading } = useGetAllLoanQuery({
 		status: 'Pending',
@@ -52,7 +52,10 @@ const PendingLoans = () => {
 		page,
 	})
 
-	
+	const handlePageChange = (page: number) => {
+		setPage(page)
+	}
+
 	return (
 		<>
 			<Card>
@@ -144,6 +147,12 @@ const PendingLoans = () => {
 									  ))}
 							</tbody>
 						</Table>
+						{data?.totalPages > 1 && (
+							<PaginationWithStates
+								pages={data?.totalPages}
+								handlePageChange={handlePageChange}
+							/>
+						)}
 					</div>
 				</Card.Body>
 				{loading === false && data && data.length === 0 && (
@@ -158,16 +167,20 @@ const PendingLoans = () => {
 
 const StripedRows = () => {
 	const [statusFilter, setStatusFilter] = useState('')
-	const user = useSelector((state: any) => state?.auth?.userInfo);
+	const user = useSelector((state: any) => state?.auth?.userInfo)
 
-	const [page] = useState(1)
-	const limit = 10000
+	const [page, setPage] = useState(1)
+	const limit = 20
 
 	const { data, isLoading: loading } = useGetAllLoanQuery({
 		status: statusFilter,
 		limit,
 		page,
 	})
+
+	const handlePageChange = (page: number) => {
+		setPage(page)
+	}
 
 	return (
 		<>
@@ -180,23 +193,23 @@ const StripedRows = () => {
 				</Card.Header>
 				<Card.Body>
 					<div style={{ maxWidth: '300px' }}>
-						{user?.isAdmin &&
-						<FormInput
-							label="Loan Status"
-							type="select"
-							name="areaId"
-							onChange={(e) => setStatusFilter(e.target.value)}
-							containerClass="mb-3"
-							className="form-select">
-							<option defaultValue={''} value={''}>
-								All
-							</option>
-							<option value="Pending">Pending</option>
-							<option value="Approved">Approved</option>
-							<option value="Finished">Finished</option>
-							<option value="Rejected">Rejected</option>
-						</FormInput>
-						 }
+						{user?.isAdmin && (
+							<FormInput
+								label="Loan Status"
+								type="select"
+								name="areaId"
+								onChange={(e) => setStatusFilter(e.target.value)}
+								containerClass="mb-3"
+								className="form-select">
+								<option defaultValue={''} value={''}>
+									All
+								</option>
+								<option value="Pending">Pending</option>
+								<option value="Approved">Approved</option>
+								<option value="Finished">Finished</option>
+								<option value="Rejected">Rejected</option>
+							</FormInput>
+						)}
 					</div>
 					<div className="table-responsive-sm">
 						<Table className="table-striped table-centered mb-0">
@@ -284,6 +297,12 @@ const StripedRows = () => {
 									  ))}
 							</tbody>
 						</Table>
+						{data?.totalPages > 1 && (
+							<PaginationWithStates
+								pages={data?.totalPages}
+								handlePageChange={handlePageChange}
+							/>
+						)}
 					</div>
 				</Card.Body>
 				{loading === false && data && data.length === 0 && (
@@ -309,12 +328,11 @@ const ModalSizes = ({
 		useModal()
 	const { data: areaData } = useGetAllAreasQuery({ page: 1, limit: 100000 })
 
-	const [customerData, setCustomerData] = useState<any>([])
-	const [cCode, setCCode] = useState<any>('')
-	const [gCode, setGCode] = useState<any>('')
-	const [guarantorData, setGuarantorData] = useState<any>([])
-	const { token } = useAuth()
-	
+	const [customerData, setCustomerData] = useState<any>()
+	const [guarantorData, setGuarantorData] = useState<any>()
+
+	const [cCode, setCCode] = useState<string>('')
+	const [gCode, setGCode] = useState<string>('')
 
 	const [formData, setFormData] = useState<any>({
 		location: '',
@@ -334,16 +352,15 @@ const ModalSizes = ({
 	})
 
 	useEffect(() => {
-		if(formData.loanDuration){
+		if (formData.loanDuration) {
 			const data = new Date(formData.startDate)
 			data.setDate(data.getDate() + Number(formData.loanDuration))
 			const endDate2 = data.toISOString().substr(0, 10)
-		
+
 			setFormData((prevData: any) => ({
 				...prevData,
 				endDate: endDate2,
-			})) 
-			console.log("form",formData.endDate)
+			}))
 		}
 	}, [formData.loanDuration, formData.startDate])
 
@@ -384,14 +401,6 @@ const ModalSizes = ({
 		}))
 	}
 
-	const { data: customer } = useSearchCustomerQuery(cCode)
-
-	useEffect(() => {
-		if (cCode) {
-			setCCode(customer?.customerCode)
-		}
-	})
-
 	const { data: loanDays } = useGetSettingQuery(undefined)
 
 	useEffect(() => {
@@ -403,90 +412,31 @@ const ModalSizes = ({
 		}
 	}, [loanDays])
 
-	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				const response = await axios.get(
-					`${
-						import.meta.env.VITE_API_URL
-					}/api/customer/search?customerCode=${cCode}`,
-					{
-						headers: {
-							Authorization: `Bearer ${token}`,
-						},
-					}
-				)
-				if (response.data.success == true) {
-					setCustomerData(response.data.customers)
-					setFormData((prevData: any) => ({
-						...prevData,
-						customerCode: response.data.customers[0]._id,
-					}))
-				} else {
-					setCustomerData({})
-					setFormData((prevData: any) => ({
-						...prevData,
-						customerCode: '',
-					}))
-				}
-			} catch (error) {
-				console.error('Error fetching data:', error)
-			}
-		}
-		if (cCode) {
-			fetchData()
-		} else {
-			setCustomerData({})
-			setFormData((prevData: any) => ({
-				...prevData,
-				customerCode: '',
-			}))
-		}
-	}, [cCode])
+	const { data: Customer } = useSearchCustomerQuery(cCode)
+	const { data: Guarantor } = useSearchGuarantorQuery(gCode)
 
 	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				const response = await axios.get(
-					`${
-						import.meta.env.VITE_API_URL
-					}/api/guarantor/search?guarantorCode=${gCode}`,
-					{
-						headers: {
-							Authorization: `Bearer ${token}`,
-						},
-					}
-				)
-				if (response.data.success == true) {
-					setGuarantorData(response.data.guarantors)
-					setFormData((prevData: any) => ({
-						...prevData,
-						guarantorCode: response.data.guarantors[0]._id,
-					}))
-				} else {
-					setGuarantorData({})
-					setFormData((prevData: any) => ({
-						...prevData,
-						guarantorCode: '',
-					}))
-				}
-			} catch (error) {
-				console.error('Error fetching data:', error)
-			}
-		}
-		if (gCode) {
-			fetchData()
-		} else {
-			setGuarantorData({})
+		if (Customer) {
+			setCustomerData(Customer?.customers?.[0] || '')
 			setFormData((prevData: any) => ({
 				...prevData,
-				guarantorCode: '',
+				customerCode: Customer?.customers?.[0]._id || '',
 			}))
 		}
-	}, [gCode])
+	}, [Customer])
 
-	const [createLoan] = useCreateLoanMutation()
-	const [updateLoan] = useUpdateLoanMutation()
+	useEffect(() => {
+		if (Guarantor) {
+			setGuarantorData(Guarantor?.guarantors?.[0] || '')
+			setFormData((prevData: any) => ({
+				...prevData,
+				guarantorCode: Guarantor?.guarantors?.[0]._id || '',
+			}))
+		}
+	}, [Guarantor])
+
+	const [createLoan, { isLoading: createLoading }] = useCreateLoanMutation()
+	const [updateLoan, { isLoading: updateLoading }] = useUpdateLoanMutation()
 
 	const onSubmit = async () => {
 		try {
@@ -515,7 +465,12 @@ const ModalSizes = ({
 			toast.success(response.message)
 			toggleModal()
 		} catch (err: any) {
-			if (err.status === 409 || err.status === 404 || err.status === 400) {
+			if (
+				err.status === 409 ||
+				err.status === 404 ||
+				err.status === 400 ||
+				err.status === 401
+			) {
 				toast.error(err.data.message)
 			} else {
 				console.error(err)
@@ -564,13 +519,13 @@ const ModalSizes = ({
 							<Button onClick={GenerateCode} className="mb-3">
 								Generate Code
 							</Button>
-							{customerData.length > 0 && (
+							{customerData && (
 								<>
 									<h5>Customer Details</h5>
 									<p>
-										Name: {customerData[0].firstName} {customerData[0].surName}
+										Name: {customerData?.firstName} {customerData?.surName}
 									</p>
-									{customerData[0].nic && <p>Nic: {customerData[0].nic}</p>}
+									{customerData?.nic && <p>Nic: {customerData?.nic}</p>}
 								</>
 							)}
 							<FormInput
@@ -584,16 +539,16 @@ const ModalSizes = ({
 								containerClass="mb-3"
 							/>
 
-							{guarantorData.length > 0 && (
+							{guarantorData && (
 								<>
 									<h5>Guarantor Details</h5>
 									<p>
-										Name: {guarantorData[0].firstName}{' '}
-										{guarantorData[0].surName}
+										Name: {guarantorData.firstName} {guarantorData.surName}
 									</p>
-									{guarantorData[0].nic && <p>Nic: {guarantorData[0].nic}</p>}
+									{guarantorData.nic && <p>Nic: {guarantorData.nic}</p>}
 								</>
 							)}
+
 							<FormInput
 								label="Guarantor Code"
 								type="text"
@@ -760,7 +715,12 @@ const ModalSizes = ({
 						<Button variant="light" onClick={toggleModal}>
 							Close
 						</Button>{' '}
-						<Button onClick={onSubmit}>Save changes</Button>
+						<Button onClick={onSubmit}>
+							{(createLoading || updateLoading) && (
+								<Spinner size="sm" className="me-2" />
+							)}
+							Save changes
+						</Button>
 					</Modal.Footer>
 				</Modal>
 			</div>
@@ -785,7 +745,7 @@ const ActionModal = ({ children, data }: { children: any; data?: any }) => {
 			[name]: type === 'file' ? files[0] : value,
 		}))
 	}
-	const [action] = useActionLoanMutation()
+	const [action, { isLoading: actionLoading }] = useActionLoanMutation()
 
 	const onSubmit = async ({ type }: any) => {
 		if (type === 'Approved') {
@@ -880,290 +840,13 @@ const ActionModal = ({ children, data }: { children: any; data?: any }) => {
 						<Button
 							onClick={() => onSubmit({ type: 'Approved' })}
 							variant="success">
+							
 							Approved
 						</Button>
+						{actionLoading && <Spinner size="sm" className="me-2" />}
 					</Modal.Footer>
 				</Modal>
 			</div>
 		</>
 	)
 }
-
-// const ViewModal = ({ children, data }: { children: any; data?: any }) => {
-// 	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
-// 		useModal()
-// 	const [areaData, setAreaData] = useState<any>([])
-// 	const [customerData, setCustomerData] = useState<any>([])
-// 	const [cCode, setCCode] = useState<any>('')
-// 	const [gCode, setGCode] = useState<any>('')
-// 	const [guarantorData, setGuarantorData] = useState<any>([])
-// 	const { token } = useAuth()
-
-// 	const [formData, setFormData] = useState<any>({
-// 		location: '',
-// 		customerCode: '',
-// 		guarantorCode: '',
-// 		loanDuration: 0,
-// 		ofInstallments: 0,
-// 		areaId: '',
-// 		collectWeek: '',
-// 		collectDay: '',
-// 		loanAmount: 0,
-// 		interestRate: 40,
-// 		startDate: new Date().toISOString().substr(0, 10),
-// 		endDate: '',
-// 		description: '',
-// 		loanCode: '',
-// 	})
-// 	console.log(data)
-// 	useEffect(() => {
-// 		setFormData({
-// 			location: data.location,
-// 			loanDuration: data.loanDuration,
-// 			ofInstallments: data.ofInstallments,
-// 			areaId: data.areaId,
-// 			collectWeek: data.collectWeek,
-// 			collectDay: data.collectDay,
-// 			loanAmount: data.loanAmount,
-// 			interestRate: data.interestRate,
-// 			startDate: data.startDate,
-// 			endDate: data.endDate,
-// 			description: data.description,
-// 			loanCode: data.loanCode,
-// 		})
-// 		setCCode(data.customerCode?.customerCode)
-// 		setGCode(data.guarantorCode?.guarantorCode)
-// 	}, [])
-
-// 	useEffect(() => {
-// 		const fetchData = async () => {
-// 			try {
-// 				const response = await axios.get(
-// 					`${import.meta.env.VITE_API_URL}/api/area/all`,
-// 					{
-// 						headers: {
-// 							Authorization: `Bearer ${token}`,
-// 						},
-// 					}
-// 				)
-// 				setAreaData(response.data.areas)
-// 			} catch (error) {
-// 				console.error('Error fetching data:', error)
-// 			}
-// 		}
-// 		fetchData()
-// 	}, [])
-
-// 	useEffect(() => {
-// 		const fetchData = async () => {
-// 			try {
-// 				const response = await axios.get(
-// 					`${
-// 						import.meta.env.VITE_API_URL
-// 					}/api/customer/search?customerCode=${cCode}`,
-// 					{
-// 						headers: {
-// 							Authorization: `Bearer ${token}`,
-// 						},
-// 					}
-// 				)
-// 				if (response.data.success == true) {
-// 					setCustomerData(response.data.customers)
-// 					setFormData((prevData: any) => ({
-// 						...prevData,
-// 						customerCode: response.data.customers[0]._id,
-// 					}))
-// 				} else {
-// 					setCustomerData({})
-// 					setFormData((prevData: any) => ({
-// 						...prevData,
-// 						customerCode: '',
-// 					}))
-// 				}
-// 				console.log(customerData)
-// 			} catch (error) {
-// 				console.error('Error fetching data:', error)
-// 			}
-// 		}
-// 		if (cCode) {
-// 			fetchData()
-// 		} else {
-// 			setCustomerData({})
-// 			setFormData((prevData: any) => ({
-// 				...prevData,
-// 				customerCode: '',
-// 			}))
-// 		}
-// 	}, [cCode])
-
-// 	useEffect(() => {
-// 		const fetchData = async () => {
-// 			try {
-// 				const response = await axios.get(
-// 					`${
-// 						import.meta.env.VITE_API_URL
-// 					}/api/guarantor/search?guarantorCode=${gCode}`,
-// 					{
-// 						headers: {
-// 							Authorization: `Bearer ${token}`,
-// 						},
-// 					}
-// 				)
-// 				if (response.data.success == true) {
-// 					setGuarantorData(response.data.guarantors)
-// 					setFormData((prevData: any) => ({
-// 						...prevData,
-// 						guarantorCode: response.data.guarantors[0]._id,
-// 					}))
-// 				} else {
-// 					setGuarantorData({})
-// 					setFormData((prevData: any) => ({
-// 						...prevData,
-// 						guarantorCode: '',
-// 					}))
-// 				}
-// 			} catch (error) {
-// 				console.error('Error fetching data:', error)
-// 			}
-// 		}
-// 		if (gCode) {
-// 			fetchData()
-// 		} else {
-// 			setGuarantorData({})
-// 			setFormData((prevData: any) => ({
-// 				...prevData,
-// 				guarantorCode: '',
-// 			}))
-// 		}
-// 	}, [gCode])
-
-// 	return (
-// 		<>
-// 			<div className="d-flex flex-wrap gap-2">
-// 				<div onClick={() => openModalWithSize('lg')} className="flex">
-// 					<>{children}</>
-// 				</div>
-
-// 				<Modal
-// 					className="fade"
-// 					show={isOpen}
-// 					onHide={toggleModal}
-// 					dialogClassName={className}
-// 					size={size}
-// 					scrollable={scroll}>
-// 					<Modal.Header onHide={toggleModal} closeButton>
-// 						<h4 className="modal-title">Loan Details</h4>
-// 					</Modal.Header>
-// 					<Modal.Body>
-// 						<form>
-// 							<p>
-// 								Location: <span>{formData.location}</span>
-// 							</p>
-// 							<p>
-// 								Loan Code: <span>{formData.loanCode}</span>
-// 							</p>
-// 							<div className="bg-light rounded p-1 mb-3"></div>
-
-// 							{customerData.length > 0 && (
-// 								<>
-// 									<Image
-// 										src={customerData[0].profilePicture}
-// 										/>
-// 									<h5>Customer Details</h5>
-// 									<p>
-// 										Customer Code: <span>{cCode || null}</span>
-// 									</p>
-// 									<p>
-// 										Name: {customerData[0].firstName} {customerData[0].surName}
-// 									</p>
-// 									{customerData[0].nic && <p>Nic: {customerData[0].nic}</p>}
-// 								</>
-// 							)}
-// 							<div className="bg-light rounded p-1 mb-3"></div>
-// 							{guarantorData.length > 0 && (
-// 								<>
-// 									<h5>Guarantor Details</h5>
-// 									<p>
-// 										Guarantor Code: <span>{gCode || null}</span>
-// 									</p>
-// 									<p>
-// 										Name: {guarantorData[0].firstName}{' '}
-// 										{guarantorData[0].surName}
-// 									</p>
-// 									{guarantorData[0].nic && <p>Nic: {guarantorData[0].nic}</p>}
-// 								</>
-// 							)}
-
-// 							{/* <h6>Area : ad </h6>
-// 							<FormInput
-// 								label="Area"
-// 								type="select"
-// 								name="areaId"
-// 								value={formData.areaId}
-// 								onChange={handleChange}
-// 								containerClass="mb-3"
-// 								className="form-select">
-// 								<option defaultValue={''}>Choose...</option>
-// 								{(areaData || []).map((area: any, idx: number) => (
-// 									<option key={idx} value={area._id}>
-// 										{area.name}
-// 									</option>
-// 								))}
-// 							</FormInput> */}
-
-// 							<div className="bg-light rounded p-1 mb-3"></div>
-
-// 							<h4>Loan Details</h4>
-// 							<h5>Loan Duration : {formData.loanDuration} Days</h5>
-// 							<h5>Loan Amount (Rs): {formData.loanAmount}</h5>
-// 							<h5>Interest Rate : {formData.interestRate}%</h5>
-// 							<h5 style={{ color: 'red' }}>
-// 								Total Amount (Rs):{' '}
-// 								{(
-// 									(Number(formData.loanAmount) *
-// 										Number(formData.interestRate)) /
-// 										100 +
-// 									Number(formData.loanAmount)
-// 								).toFixed(2)}
-// 							</h5>
-
-// 							<h5 className="mt-3">
-// 								Of Installments : {formData.ofInstallments}
-// 							</h5>
-// 							<h5 style={{ color: 'red' }}>
-// 								Amount Per Installment (Rs):{' '}
-// 								{(
-// 									((Number(formData.loanAmount) *
-// 										Number(formData.interestRate)) /
-// 										100 +
-// 										Number(formData.loanAmount)) /
-// 									(formData.ofInstallments || 1)
-// 								).toFixed(2)}
-// 							</h5>
-
-// 							<div className="bg-light rounded p-1 mb-3"></div>
-
-// 							<p>Start Date : {formData.startDate}</p>
-
-// 							<h4>Collecting Type</h4>
-// 							<p>Collecting Week : {formData.collectWeek}</p>
-// 							<p>Collecting Day : {formData.collectDay}</p>
-
-// 							{formData.description && (
-// 								<>
-// 									<div className="bg-light rounded p-1 mb-3"></div>
-// 									<p>Description : {formData.description}</p>
-// 								</>
-// 							)}
-// 						</form>
-// 					</Modal.Body>
-// 					<Modal.Footer>
-// 						<Button variant="light" onClick={toggleModal}>
-// 							Close
-// 						</Button>
-// 					</Modal.Footer>
-// 				</Modal>
-// 			</div>
-// 		</>
-// 	)
-// }

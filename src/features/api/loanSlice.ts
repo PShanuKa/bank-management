@@ -42,7 +42,7 @@ export const loanSlice = apiSlice.injectEndpoints({
         }),
         getReminderLoan: builder.query({
             query: (data) => ({
-                url: `/loan//reminder?endDate=${data}`,
+                url: `/loan//reminder?endDate=${data.endDate}&page=${data.page}&limit=${data.limit}`,
                 method: 'GET'
             }),
             providesTags: ['Loan'],

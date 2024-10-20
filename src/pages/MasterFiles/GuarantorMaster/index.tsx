@@ -1,4 +1,5 @@
 import { FormInput, PageBreadcrumb } from '@/components'
+import PaginationWithStates from '@/components/Pagination'
 import { useCreateGuarantorMutation, useGetAllGuarantorsQuery, useUpdateGuarantorMutation } from '@/features/api/guarantorSlice'
 import { useUploadImageMutation } from '@/features/api/uploadSlice'
 import { useModal } from '@/hooks'
@@ -19,11 +20,13 @@ export default index
 
 const StripedRows = () => {
 	
-
-	const [page] = useState(1)
-	const limit = 10000
-
+	const [page, setPage] = useState(1)
+	const limit = 20
 	const { data, isLoading: loading } = useGetAllGuarantorsQuery({ page, limit })
+
+	const handlePageChange = (page: number) => {
+		setPage(page)
+	}
 
 	return (
 		<>
@@ -31,7 +34,7 @@ const StripedRows = () => {
 				<Card.Header className="d-flex justify-content-between">
 					<h4 className="header-title">Guarantor Master</h4>
 					<ModalSizes>
-						<Button variant="info">Add New Customer</Button>
+						<Button variant="info">Add New Guarantor</Button>
 					</ModalSizes>
 				</Card.Header>
 				<Card.Body>
@@ -116,6 +119,12 @@ const StripedRows = () => {
 									  ))}
 							</tbody>
 						</Table>
+						{data?.totalPages > 1 && (	
+						<PaginationWithStates
+							pages={data?.totalPages}
+							handlePageChange={handlePageChange}
+						/>
+						)}
 					</div>
 				</Card.Body>
 				{loading === false && data && data.length === 0 && (
@@ -216,8 +225,8 @@ const ModalSizes = ({
 	}
 
 
-	const [createGuarantor] = useCreateGuarantorMutation()
-	const [updateGuarantor] = useUpdateGuarantorMutation()
+	const [createGuarantor , {isLoading: createLoading}] = useCreateGuarantorMutation()
+	const [updateGuarantor , {isLoading: updateLoading}] = useUpdateGuarantorMutation()
 	const onSubmit = async () => {
 		try {
 			let response
@@ -242,7 +251,7 @@ const ModalSizes = ({
 			toast.success(response.message)
 			toggleModal()
 		} catch (err: any) {
-			if (err.status === 409 || err.status === 404 || err.status === 400) {
+			if (err.status === 409 || err.status === 404 || err.status === 400 || err.status === 401) {
 				toast.error(err.data.message)
 			} else {
 				console.error(err)
@@ -383,10 +392,10 @@ const ModalSizes = ({
 							/>
 					</Modal.Body>
 					<Modal.Footer>
-						<Button variant="light" onClick={onSubmit}>
+						<Button variant="light" onClick={toggleModal} >
 							Close
 						</Button>
-						<Button onClick={onSubmit}>Save changes</Button>
+						<Button onClick={onSubmit}>{(createLoading || updateLoading) && <Spinner size='sm' className='me-2' /> }Save changes</Button>
 					</Modal.Footer>
 				</Modal>
 			</div>

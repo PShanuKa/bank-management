@@ -24,8 +24,14 @@ export const guarantorSlice = apiSlice.injectEndpoints({
                 method: 'GET'
             }),
             providesTags: ['Guarantor'],
+        }),
+        searchGuarantor: builder.query({
+            query: (data) => ({
+                url: `/guarantor/search?guarantorCode=${data}`,
+                method: 'GET'
+            }),
         })
     })
 })
 
-export const { useCreateGuarantorMutation, useUpdateGuarantorMutation, useGetAllGuarantorsQuery } = guarantorSlice
+export const { useCreateGuarantorMutation, useUpdateGuarantorMutation, useGetAllGuarantorsQuery , useSearchGuarantorQuery } = guarantorSlice

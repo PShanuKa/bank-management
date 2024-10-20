@@ -7,9 +7,12 @@ import {
 import { useModal } from '@/hooks'
 import { toast } from 'material-react-toastify'
 import { useState } from 'react'
-import { Button, Card, Image, Modal, Table } from 'react-bootstrap'
+import { Button, Card, Image, Modal, Spinner, Table } from 'react-bootstrap'
 import { useParams } from 'react-router-dom'
-import { useGetALoanQuery } from '@/features/api/loanSlice'
+import {
+	useActionLoanMutation,
+	useGetALoanQuery,
+} from '@/features/api/loanSlice'
 
 const index = () => {
 	const { id } = useParams()
@@ -50,9 +53,21 @@ const index = () => {
 								<tr>
 									<th scope="row">End Date</th>
 									<td>
-										<p className="ng-binding text-end">{data?.Loan?.endDate}</p>
+										<p className="ng-binding text-end">
+											{String(data?.Loan?.endDate).split('T')[0]}
+										</p>
 									</td>
 								</tr>
+								{data?.Loan?.reminderDescription && (
+									<tr>
+										<th scope="row">Reminder Description</th>
+										<td>
+											<p className="ng-binding text-end">
+												{data?.Loan?.reminderDescription}
+											</p>
+										</td>
+									</tr>
+								)}
 							</tbody>
 						</table>
 
@@ -65,20 +80,20 @@ const index = () => {
 									<th scope="row">Week</th>
 									<td className="ng-binding">
 										<p className="ng-binding text-end ">
-											{data?.Loan?.collectWeek
-											}
+											{data?.Loan?.collectWeek}
 										</p>
 									</td>
 								</tr>
 								<tr>
 									<th scope="row">Day</th>
 									<td>
-										<p className="ng-binding text-end">{data?.Loan?.collectDay}</p>
+										<p className="ng-binding text-end">
+											{data?.Loan?.collectDay}
+										</p>
 									</td>
 								</tr>
 							</tbody>
 						</table>
-
 
 						<h5 className="mt-4 fs-17 text-dark">Amount Information</h5>
 						<table
@@ -207,16 +222,22 @@ const index = () => {
 										</tr>
 										<tr>
 											<th scope="row">Surname</th>
-											<td className="ng-binding text-end">{data?.Loan?.guarantorCode?.surName}</td>
+											<td className="ng-binding text-end">
+												{data?.Loan?.guarantorCode?.surName}
+											</td>
 										</tr>
 										<tr>
 											<th scope="row">Mobile Number</th>
-											<td className="ng-binding text-end">{data?.Loan?.guarantorCode?.number}</td>
+											<td className="ng-binding text-end">
+												{data?.Loan?.guarantorCode?.number}
+											</td>
 										</tr>
 										<tr>
 											<th scope="row">NIC Number</th>
 											<td>
-												<p className="ng-binding text-end">{data?.Loan?.guarantorCode?.nic}</p>
+												<p className="ng-binding text-end">
+													{data?.Loan?.guarantorCode?.nic}
+												</p>
 											</td>
 										</tr>
 									</tbody>
@@ -276,11 +297,17 @@ const BorderedColorTable = () => {
 							</tbody>
 						</Table>
 
-						<h5 className="mt-3">Total Payment: <span className="text-dark">Rs {String(totalBalance)}</span> </h5>
+						<h5 className="mt-3">
+							Total Payment:{' '}
+							<span className="text-dark">Rs {String(totalBalance)}</span>{' '}
+						</h5>
 
-						<div className="d-flex justify-content-end py-3">
-							<ModalSizes>
-								<button className="btn btn-primary">Add New</button>
+						<div className="d-flex justify-content-between py-3">
+							<ActionModal>
+								<button className="btn btn-primary">Finished</button>
+							</ActionModal>
+							<ModalSizes data={data}>
+								<button className="btn btn-success">Add New</button>
 							</ModalSizes>
 						</div>
 					</div>
@@ -300,7 +327,8 @@ const ModalSizes = ({ children, data }: { children: any; data?: any }) => {
 		balance: '',
 		loanId: id,
 	})
-	const [createPayment] = useCreatePaymentMutation()
+	const [createPayment, { isLoading: createLoading }] =
+		useCreatePaymentMutation()
 
 	const onSubmit = async () => {
 		try {
@@ -369,7 +397,10 @@ const ModalSizes = ({ children, data }: { children: any; data?: any }) => {
 						<Button variant="light" onClick={toggleModal}>
 							Close
 						</Button>{' '}
-						<Button onClick={onSubmit}>Save changes</Button>
+						<Button onClick={onSubmit}>
+							{createLoading && <Spinner size="sm" className="me-2" />}Save
+							changes
+						</Button>
 					</Modal.Footer>
 				</Modal>
 			</div>
@@ -386,7 +417,8 @@ const DeleteModalSizes = ({
 }) => {
 	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
 		useModal()
-	const [deletePayment] = useDeletePaymentMutation()
+	const [deletePayment, { isLoading: deleteLoading }] =
+		useDeletePaymentMutation()
 
 	const onSubmit = async () => {
 		try {
@@ -423,8 +455,63 @@ const DeleteModalSizes = ({
 							Close
 						</Button>{' '}
 						<Button variant="danger" onClick={onSubmit}>
+							{deleteLoading && <Spinner size="sm" className="me-2" />}
 							Delete
 						</Button>
+					</Modal.Footer>
+				</Modal>
+			</div>
+		</>
+	)
+}
+
+const ActionModal = ({ children, data }: { children: any; data?: any }) => {
+	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
+		useModal()
+	const { id } = useParams()
+	const [formData] = useState<any>({
+		status: 'Finished',
+	})
+	const [action, { isLoading: actionLoading }] = useActionLoanMutation()
+
+	const onSubmit = async () => {
+		try {
+			const response = await action({ formData, id }).unwrap()
+			toast.success(response.message)
+			toggleModal()
+		} catch (error: any) {
+			toast.error('Error submitting the form')
+			console.error('Error submitting the form:', error)
+		}
+	}
+
+	return (
+		<>
+			<div className="d-flex flex-wrap gap-2">
+				<div onClick={() => openModalWithSize('lg')} className="flex">
+					<>{children}</>
+				</div>
+				<Modal
+					className="fade"
+					show={isOpen}
+					onHide={toggleModal}
+					dialogClassName={className}
+					size={size}
+					scrollable={scroll}>
+					<Modal.Header onHide={toggleModal} closeButton>
+						<h4 className="modal-title">Finish loan</h4>
+					</Modal.Header>
+					<Modal.Body>
+						<h4>Are you sure you want to {formData.status} this loan</h4>
+					</Modal.Body>
+					<Modal.Footer>
+						<Button variant="light" onClick={toggleModal}>
+							Close
+						</Button>{' '}
+						<Button onClick={() => onSubmit()} variant="success">
+						{actionLoading && <Spinner size="sm" className="me-2" />}
+							Finished
+						</Button>	
 					</Modal.Footer>
 				</Modal>
 			</div>

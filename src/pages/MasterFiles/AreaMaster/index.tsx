@@ -1,12 +1,13 @@
 
 import { FormInput, PageBreadcrumb } from '@/components'
+import PaginationWithStates from '@/components/Pagination'
 import { useAreaCreateMutation, useAreaUpdateMutation, useGetAllAreasQuery } from '@/features/api/areaSlice'
 import { useGetAllEmployeesQuery } from '@/features/api/employeeSlice'
 import { useModal } from '@/hooks'
 import { toast } from 'material-react-toastify'
 import { useEffect, useState } from 'react'
 
-import { Button, Card, Modal, Placeholder, Table } from 'react-bootstrap'
+import { Button, Card, Modal, Placeholder, Spinner, Table } from 'react-bootstrap'
 
 const index = () => {
 	return (
@@ -20,7 +21,14 @@ const index = () => {
 export default index
 
 const StripedRows = () => {
-	const {data, isLoading: loading} = useGetAllAreasQuery({page:1, limit:100000})
+	const [page, setPage] = useState(1)
+	const limit = 20
+	const {data, isLoading: loading} = useGetAllAreasQuery({page, limit})
+
+	const handlePageChange = (page: number) => {
+		setPage(page)
+	}
+
 	return (
 		<>
 			<Card>
@@ -92,6 +100,12 @@ const StripedRows = () => {
 									  ))}
 							</tbody>
 						</Table>
+						{data?.totalPages > 1 && (	
+						<PaginationWithStates
+							pages={data?.totalPages}
+							handlePageChange={handlePageChange}
+						/>
+						)}
 					</div>
 				</Card.Body>
 				{loading === false && data && data.length === 0 && (
@@ -117,8 +131,8 @@ const ModalSizes = ({
 		useModal()
 	
 	
-	const [createArea] = useAreaCreateMutation()
-	const [updateArea] = useAreaUpdateMutation()
+	const [createArea , {isLoading: createLoading}] = useAreaCreateMutation()
+	const [updateArea , {isLoading: updateLoading}] = useAreaUpdateMutation()
 	
 	const [formData, setFormData] = useState<any>({
 		name: '',
@@ -168,7 +182,7 @@ const ModalSizes = ({
 			toast.success(response.message)
 			toggleModal()
 		} catch (err:any) {
-			if(err.status === 400){
+			if(err.status === 400 || err.status === 401) {
 				toast.error(err.data.message)
 			}else if (err.status === 500) {
 				console.log(err)
@@ -238,7 +252,7 @@ const ModalSizes = ({
 						<Button variant="light" onClick={toggleModal}>
 							Close
 						</Button>{' '}
-						<Button onClick={onSubmit}>Save changes</Button>
+						<Button onClick={onSubmit}>{(createLoading || updateLoading) && <Spinner size='sm' className='me-2' /> }Save changes</Button>
 					</Modal.Footer>
 				</Modal>
 			</div>

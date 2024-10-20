@@ -1,5 +1,6 @@
 
 import { FormInput, PageBreadcrumb } from '@/components'
+import PaginationWithStates from '@/components/Pagination'
 import {
 	useGetAllLoanQuery,
 } from '@/features/api/loanSlice'
@@ -27,15 +28,19 @@ export default index
 
 const StripedRows = () => {
 	const [statusFilter, setStatusFilter] = useState('')
-	const [page] = useState(1)
-	const limit = 10000
+	const [page, setPage] = useState(1)
+	const limit = 20
 	const { data, isLoading: loading } = useGetAllLoanQuery({ status: statusFilter ,limit,page})
+
+	const handlePageChange = (page: number) => {
+		setPage(page)
+	}
 
 	return (
 		<>
 			<Card>
 				<Card.Header className="d-flex justify-content-between">
-					<h4 className="header-title">Loans</h4>
+					<h4 className="header-title">Loans Details</h4>
 				
 				</Card.Header>
 				<Card.Body>
@@ -116,14 +121,36 @@ const StripedRows = () => {
 													</Placeholder>
 												</td>
 												<td>
+													<Placeholder as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder>
+												</td>
+												<td>
+													<Placeholder as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder>
+												</td>
+												<td>
+													<Placeholder as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder>
+												</td>
+												<td>
 													<Placeholder.Button as="p" animation="glow">
 														<Placeholder style={{ width: '25%' }} />
 													</Placeholder.Button>
 												</td>
+												
 											</tr>
 									  ))}
 							</tbody>
 						</Table>
+						{data?.totalPages > 1 && (	
+						<PaginationWithStates
+							pages={data?.totalPages}
+							handlePageChange={handlePageChange}
+						/>
+						)}
 					</div>
 				</Card.Body>
 				{loading === false && data && data.length === 0 && (

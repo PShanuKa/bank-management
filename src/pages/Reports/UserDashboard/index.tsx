@@ -1,4 +1,5 @@
 import { FormInput, PageBreadcrumb } from '@/components'
+import PaginationWithStates from '@/components/Pagination'
 import { useGetAllAreasQuery } from '@/features/api/areaSlice'
 import { useGetAllEmployeesQuery } from '@/features/api/employeeSlice'
 import { useCreateUserTaskMutation, useDeleteUserTaskMutation, useGetAllUserTaskQuery, useUpdateUserTaskMutation } from '@/features/api/userTaskSlice'
@@ -21,10 +22,15 @@ export default index;
 
 const StripedRows = () => {
 	const [statusFilter, setStatusFilter] = useState('')
-	const [page] = useState(1)
-	const limit = 10000
+	const [page , setPage] = useState(1)
+	const limit = 20
 	const { data, isLoading: loading } = useGetAllUserTaskQuery({search : statusFilter, page, limit })
 	const { data : employees } = useGetAllEmployeesQuery({ page: 1, limit: 1000000 })
+
+
+	const handlePageChange = (page: number) => {
+		setPage(page)
+	}
 
 	return (
 		<>
@@ -129,6 +135,12 @@ const StripedRows = () => {
 									  ))}
 							</tbody>
 						</Table>
+						{data?.totalPages > 1 && (	
+						<PaginationWithStates
+							pages={data?.totalPages}
+							handlePageChange={handlePageChange}
+						/>
+						)}
 					</div>
 				</Card.Body>
 				{loading === false && data && data.length === 0 && (

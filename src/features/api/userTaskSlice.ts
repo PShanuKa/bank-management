@@ -36,7 +36,7 @@ export const userTaskSlice = apiSlice.injectEndpoints({
         }),
         getAllUserTask: builder.query({
             query: (data) => ({
-                url: `/user-task/all?search=${data.search}`,
+                url: `/user-task/all?search=${data.search}&page=${data.page}&limit=${data.limit}`,
                 method: 'GET',
             }),
             providesTags: ['UserTask'],

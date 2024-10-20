@@ -6,6 +6,7 @@ import {
 	Card,
 	Image,
 	Modal,
+	
 	Placeholder,
 	Spinner,
 	Table,
@@ -19,6 +20,7 @@ import {
 	useUpdateEmployeeMutation,
 } from '@/features/api/employeeSlice'
 import { useUploadImageMutation } from '@/features/api/uploadSlice'
+import PaginationWithStates from '@/components/Pagination'
 
 const index = () => {
 	return (
@@ -32,17 +34,22 @@ const index = () => {
 export default index
 
 const StripedRows = () => {
-	const [page] = useState(1)
-	const limit = 10000
+	const [page, setPage] = useState(1)
+	const limit = 20
 
 	const { data, isLoading: loading } = useGetAllEmployeesQuery({ page, limit })
+
+	const handlePageChange = (page: number) => {
+		setPage(page)
+	}
+
 	return (
 		<>
 			<Card>
 				<Card.Header className="d-flex justify-content-between">
 					<h4 className="header-title">Employee Management</h4>
 					<ModalSizes>
-						<Button variant="info">Add New Customer</Button>
+						<Button variant="info">Add New Employee</Button>
 					</ModalSizes>
 				</Card.Header>
 				<Card.Body>
@@ -107,6 +114,12 @@ const StripedRows = () => {
 									  })}
 							</tbody>
 						</Table>
+						{data?.totalPages > 1 && (	
+						<PaginationWithStates
+							pages={data?.totalPages}
+							handlePageChange={handlePageChange}
+						/>
+						)}
 					</div>
 				</Card.Body>
 				{loading === false && data && data.length === 0 && (
@@ -118,7 +131,6 @@ const StripedRows = () => {
 		</>
 	)
 }
-
 const ModalSizes = ({
 	children,
 	type,
@@ -130,14 +142,13 @@ const ModalSizes = ({
 }) => {
 	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
 		useModal()
-	const [createEmployee] = useCreateEmployeeMutation()
-	const [updateEmployee] = useUpdateEmployeeMutation()
-	const [uploadImage, { isLoading: imageLoading }] = useUploadImageMutation();
+	const [createEmployee ,{isLoading: createLoading}] = useCreateEmployeeMutation()
+	const [updateEmployee ,{isLoading: updateLoading}] = useUpdateEmployeeMutation()
+	const [uploadImage, { isLoading: imageLoading }] = useUploadImageMutation()
 
 	// const [imageLoading, setImageLoading] = useState<Boolean>(false)
 	// State to store form data
 	const [formData, setFormData] = useState<any>({
-		
 		location: '',
 		profilePicture: '',
 		firstName: '',
@@ -156,11 +167,16 @@ const ModalSizes = ({
 	const handleImageChange = async (e: any) => {
 		const formData = new FormData()
 		formData.append('file', e.target.files[0])
-		formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET)
+		formData.append(
+			'upload_preset',
+			import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+		)
 		try {
 			const response = await uploadImage(formData).unwrap()
-			setFormData((prevData: any) => ({ ...prevData, [e.target.name]: response.secure_url }))
-			
+			setFormData((prevData: any) => ({
+				...prevData,
+				[e.target.name]: response.secure_url,
+			}))
 		} catch (error) {
 			toast.error('Error uploading image')
 			console.error('Error uploading image:', error)
@@ -222,7 +238,7 @@ const ModalSizes = ({
 			toast.success(response.message)
 			toggleModal()
 		} catch (err: any) {
-			if (err.status === 409 || err.status === 404) {
+			if (err.status === 409 || err.status === 404	|| err.status === 401) {
 				toast.error(err.data.message)
 			} else {
 				console.error(err)
@@ -257,10 +273,15 @@ const ModalSizes = ({
 								containerClass="mb-3"
 								className="form-select"
 								value={String(formData.isAdmin)}
-								onChange={(e)=> setFormData((prevData: any) => ({ ...prevData, isAdmin: (e.target.value === 'true' ? true : false) }))}>
+								onChange={(e) =>
+									setFormData((prevData: any) => ({
+										...prevData,
+										isAdmin: e.target.value === 'true' ? true : false,
+									}))
+								}>
 								<option defaultValue="">Select ...</option>
-								<option value='false' >Employee</option>
-								<option value='true'>Admin</option>
+								<option value="false">Employee</option>
+								<option value="true">Admin</option>
 							</FormInput>
 							<FormInput
 								name="location"
@@ -272,15 +293,17 @@ const ModalSizes = ({
 							/>
 							<h4 className="header-title">Personal Details</h4>
 							<h5>Profile Picture</h5>
-							{imageLoading ? <Spinner className="m-2" /> : 
+							{imageLoading ? (
+								<Spinner className="m-2" />
+							) : (
 								formData.profilePicture && (
 									<Image
-									src={formData.profilePicture}
-									alt="avatar"
-									className="img-fluid avatar-lg rounded"
+										src={formData.profilePicture}
+										alt="avatar"
+										className="img-fluid avatar-lg rounded"
 									/>
 								)
-							}
+							)}
 							<FormInput
 								type="file"
 								accept="image/*"
@@ -341,7 +364,7 @@ const ModalSizes = ({
 								<option value="female">Female</option>
 								<option value="other">Other</option>
 							</FormInput>
-							
+
 							<FormInput
 								label="Date Of Birth"
 								type="date"
@@ -384,7 +407,7 @@ const ModalSizes = ({
 								<Button variant="light" onClick={toggleModal}>
 									Close
 								</Button>
-								<Button onClick={onSubmit}>Save changes</Button>
+								<Button onClick={onSubmit}>{(createLoading || updateLoading) && <Spinner size='sm' className='me-2' /> }Save changes</Button>
 							</Modal.Footer>
 						</form>
 					</Modal.Body>
@@ -393,3 +416,5 @@ const ModalSizes = ({
 		</>
 	)
 }
+
+

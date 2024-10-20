@@ -20,9 +20,10 @@ const AreaMaster = React.lazy(() => import('../pages/MasterFiles/AreaMaster'))
 const CustomerMaster = React.lazy(() => import('../pages/MasterFiles/CustomerMaster'))
 const GuarantorMaster = React.lazy(() => import('../pages/MasterFiles/GuarantorMaster'))
 const Loan = React.lazy(() => import('../pages/Transactions'))
-const LoanSetting = React.lazy(() => import('../pages/Setting/Loan'))
 const UserDashboardReport = React.lazy(() => import('../pages/Reports/UserDashboard'))
 const LoanReminder = React.lazy(() => import('../pages/Reports/LoanReminder'))
+const LoanSetting = React.lazy(() => import('../pages/Setting/Loan'))
+const UserPermissions = React.lazy(() => import('../pages/Setting/UserPermissions'))
 
 
 // // pages
@@ -170,6 +171,12 @@ const dashboardRoutes: RoutesProps = {
 			path: 'setting/loan',
 			name: 'Loan',
 			element: <LoanSetting />,
+			route: PrivateRoute,
+		},
+		{
+			path: 'setting/user-permissions',
+			name: 'User Permissions',
+			element: <UserPermissions />,
 			route: PrivateRoute,
 		},
 		{

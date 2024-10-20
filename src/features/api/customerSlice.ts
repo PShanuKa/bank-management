@@ -30,7 +30,7 @@ export const customerSlice = apiSlice.injectEndpoints({
                 url: `/customer/search?customerCode=${data}`,
                 method: 'GET'
             }),
-            providesTags: ['Customer'],
+            
         })
     })
 })

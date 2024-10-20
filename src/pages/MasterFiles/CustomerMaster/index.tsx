@@ -1,4 +1,5 @@
 import { FormInput, PageBreadcrumb } from '@/components'
+import PaginationWithStates from '@/components/Pagination'
 import { useGetAllAreasQuery } from '@/features/api/areaSlice'
 import {
 	useCreateCustomerMutation,
@@ -33,10 +34,15 @@ const index = () => {
 export default index
 
 const StripedRows = () => {
-	const [page] = useState(1)
-	const limit = 10000
+	const [page, setPage] = useState(1)
+	const limit = 20
 
 	const { data, isLoading: loading } = useGetAllCustomersQuery({ page, limit })
+
+
+	const handlePageChange = (page: number) => {
+		setPage(page)
+	}
 
 	return (
 		<>
@@ -135,6 +141,12 @@ const StripedRows = () => {
 									  ))}
 							</tbody>
 						</Table>
+						{data?.totalPages > 1 && (	
+						<PaginationWithStates
+							pages={data?.totalPages}
+							handlePageChange={handlePageChange}
+						/>
+						)}
 					</div>
 				</Card.Body>
 				{loading === false && data && data.length === 0 && (
@@ -256,8 +268,8 @@ const ModalSizes = ({
 			customerCode: code,
 		}))
 	}
-	const [createCustomer] = useCreateCustomerMutation()
-	const [updateCustomer] = useUpdateCustomerMutation()
+	const [createCustomer, { isLoading : createLoading}] = useCreateCustomerMutation()
+	const [updateCustomer , { isLoading : updateLoading}] = useUpdateCustomerMutation()
 
 	const onSubmit = async () => {
 		try {
@@ -291,7 +303,7 @@ const ModalSizes = ({
 
 			toggleModal()
 		} catch (err: any) {
-			if (err.status === 409 || err.status === 404 || err.status === 400) {
+			if (err.status === 409 || err.status === 404 || err.status === 400 || err.status === 401) {
 				toast.error(err.data.message)
 			} else {
 				console.error(err)
@@ -554,7 +566,7 @@ const ModalSizes = ({
 						<Button variant="light" onClick={toggleModal}>
 							Close
 						</Button>{' '}
-						<Button onClick={onSubmit}>Save changes</Button>
+						<Button onClick={onSubmit}>{(createLoading || updateLoading) && <Spinner size='sm' className='me-2' /> }Save changes</Button>
 					</Modal.Footer>
 				</Modal>
 			</div>

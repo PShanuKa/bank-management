@@ -1,4 +1,5 @@
 import { FormInput, PageBreadcrumb } from '@/components'
+import PaginationWithStates from '@/components/Pagination'
 import {
 
 	useGetReminderLoanQuery,
@@ -24,10 +25,14 @@ export default index
 
 const StripedRows = () => {
 	const date = new Date().toISOString().substr(0, 10)
-	console.log(date)
-	// const [page] = useState(1)
-	// const limit = 10000
-	const { data, isLoading: loading } = useGetReminderLoanQuery(date)
+	const [page, setPage] = useState(1)
+	const limit = 20
+	const { data, isLoading: loading } = useGetReminderLoanQuery({endDate: date ,page, limit})
+
+
+	const handlePageChange = (page: number) => {
+		setPage(page)
+	}
 
 	return (
 		<>
@@ -103,6 +108,12 @@ const StripedRows = () => {
 									  ))}
 							</tbody>
 						</Table>
+						{data?.totalPages > 1 && (	
+						<PaginationWithStates
+							pages={data?.totalPages}
+							handlePageChange={handlePageChange}
+						/>
+						)}
 					</div>
 				</Card.Body>
 				{loading === false && data && data.length === 0 && (
