@@ -33,7 +33,7 @@ const ADMIN_MENU_ITEMS: MenuItemTypes[] = [
 		key: 'Master Files',
 		label: 'Master Files',
 		isTitle: false,
-		icon: 'ri-dashboard-3-line',
+		icon: ' ri-building-4-line',
 		children: [
 			{
 				key: `employee-master`,
@@ -67,7 +67,7 @@ const ADMIN_MENU_ITEMS: MenuItemTypes[] = [
 		key: 'transaction',
 		label: 'Transaction',
 		isTitle: false,
-		icon: 'ri-dashboard-3-line',
+		icon: 'ri-bar-chart-box-fill',
 		children: [
 			{
 				key: 'loans',
@@ -81,7 +81,7 @@ const ADMIN_MENU_ITEMS: MenuItemTypes[] = [
 		key: 'reports',
 		label: 'Reports',
 		isTitle: false,
-		icon: 'ri-dashboard-3-line',
+		icon: 'ri-database-line',
 		children: [
 			{
 				key: 'loan-detailed-report',
@@ -107,7 +107,7 @@ const ADMIN_MENU_ITEMS: MenuItemTypes[] = [
 		key: 'setting',
 		label: 'Setting',
 		isTitle: false,
-		icon: 'ri-dashboard-3-line',
+		icon: 'ri-file-settings-line',
 		children: [
 			{
 				key: 'user-permissions',
