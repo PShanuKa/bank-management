@@ -142,7 +142,7 @@ const MENU_ITEMS: MenuItemTypes[] = [
 		key: 'Master Files',
 		label: 'Master Files',
 		isTitle: false,
-		icon: 'ri-dashboard-3-line',
+		icon: 'ri-building-4-line',
 		children: [
 			{
 				key: 'customer-master',
@@ -162,7 +162,7 @@ const MENU_ITEMS: MenuItemTypes[] = [
 		key: 'transaction',
 		label: 'Transaction',
 		isTitle: false,
-		icon: 'ri-dashboard-3-line',
+		icon: 'ri-bar-chart-box-fill',
 		children: [
 			{
 				key: 'loans',
