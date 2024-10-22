@@ -1,17 +1,9 @@
-
 import { FormInput, PageBreadcrumb } from '@/components'
 import PaginationWithStates from '@/components/Pagination'
-import {
-	useGetAllLoanQuery,
-} from '@/features/api/loanSlice'
-import {  useState } from 'react'
-import {
-	Card,
-	Placeholder,
-	Table,
-} from 'react-bootstrap'
+import { useGetAllLoanQuery } from '@/features/api/loanSlice'
+import { useState } from 'react'
+import { Card, Placeholder, Table } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
-
 
 const index = () => {
 	return (
@@ -24,13 +16,15 @@ const index = () => {
 
 export default index
 
-
-
 const StripedRows = () => {
 	const [statusFilter, setStatusFilter] = useState('')
 	const [page, setPage] = useState(1)
 	const limit = 20
-	const { data, isLoading: loading } = useGetAllLoanQuery({ status: statusFilter ,limit,page})
+	const { data, isLoading: loading } = useGetAllLoanQuery({
+		status: statusFilter,
+		limit,
+		page,
+	})
 
 	const handlePageChange = (page: number) => {
 		setPage(page)
@@ -41,7 +35,6 @@ const StripedRows = () => {
 			<Card>
 				<Card.Header className="d-flex justify-content-between">
 					<h4 className="header-title">Loans Details</h4>
-				
 				</Card.Header>
 				<Card.Body>
 					<div style={{ maxWidth: '300px' }}>
@@ -94,10 +87,10 @@ const StripedRows = () => {
 													</td>
 													<td className="table-user">{record?.status}</td>
 
-													<td className="d-flex gap-3">	
-                            <Link to={`${record?._id}`}>
+													<td className="d-flex gap-3">
+														<Link to={`${record?._id}`}>
 															<i className="ri-settings-3-line" />
-                            </Link>
+														</Link>
 													</td>
 												</tr>
 											)
@@ -140,16 +133,15 @@ const StripedRows = () => {
 														<Placeholder style={{ width: '25%' }} />
 													</Placeholder.Button>
 												</td>
-												
 											</tr>
 									  ))}
 							</tbody>
 						</Table>
-						{data?.totalPages > 1 && (	
-						<PaginationWithStates
-							pages={data?.totalPages}
-							handlePageChange={handlePageChange}
-						/>
+						{data?.totalPages > 1 && (
+							<PaginationWithStates
+								pages={data?.totalPages}
+								handlePageChange={handlePageChange}
+							/>
 						)}
 					</div>
 				</Card.Body>
@@ -162,4 +154,3 @@ const StripedRows = () => {
 		</>
 	)
 }
-

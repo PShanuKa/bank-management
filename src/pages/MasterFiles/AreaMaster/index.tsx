@@ -23,7 +23,17 @@ export default index
 const StripedRows = () => {
 	const [page, setPage] = useState(1)
 	const limit = 20
+
+
+	
+
+
 	const {data, isLoading: loading} = useGetAllAreasQuery({page, limit})
+
+
+
+
+
 
 	const handlePageChange = (page: number) => {
 		setPage(page)
@@ -52,7 +62,7 @@ const StripedRows = () => {
 							</thead>
 							<tbody>
 								{!loading
-									? (data.areas || []).map((record: any, idx: any) => {
+									? (data?.areas || []).map((record: any, idx: any) => {
 											return (
 												<tr key={idx}>
 													<td className="table-user">&nbsp;{record.name}</td>

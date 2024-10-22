@@ -1,21 +1,25 @@
 import { FormInput, PageBreadcrumb } from '@/components'
 import PaginationWithStates from '@/components/Pagination'
 import {
-
+	useReminderInstallmentQuery,
+	useUpdateInstallmentMutation,
+} from '@/features/api/installmentSlice'
+import {
 	useGetReminderLoanQuery,
 	useUpdateLoanMutation,
 } from '@/features/api/loanSlice'
 
 import { useModal } from '@/hooks'
 
-import { useState } from 'react'
-import { Button, Card, Modal, Placeholder,  Table } from 'react-bootstrap'
-
+import { useEffect, useState } from 'react'
+import { Button, Card, Modal, Placeholder, Table } from 'react-bootstrap'
+import { Link } from 'react-router-dom'
+import { date } from 'yup'
 
 const index = () => {
 	return (
 		<>
-			<PageBreadcrumb title="Loans Reminder" subName="Report" />
+			<PageBreadcrumb title="Installment Reminder" subName="Report" />
 			<StripedRows />
 		</>
 	)
@@ -27,8 +31,11 @@ const StripedRows = () => {
 	const date = new Date().toISOString().substr(0, 10)
 	const [page, setPage] = useState(1)
 	const limit = 20
-	const { data, isLoading: loading } = useGetReminderLoanQuery({endDate: date ,page, limit})
-
+	const { data, isLoading: loading } = useReminderInstallmentQuery({
+		endDate: date,
+		page,
+		limit,
+	})
 
 	const handlePageChange = (page: number) => {
 		setPage(page)
@@ -38,7 +45,7 @@ const StripedRows = () => {
 		<>
 			<Card>
 				<Card.Header className="d-flex justify-content-between">
-					<h4 className="header-title">Loans Reminder</h4>
+					<h4 className="header-title">Installment Reminder</h4>
 				</Card.Header>
 				<Card.Body>
 					<div className="table-responsive-sm">
@@ -46,37 +53,33 @@ const StripedRows = () => {
 							<thead>
 								<tr>
 									<th>Loan ID</th>
-									<th>Customer ID</th>
-									<th>Customer Name</th>
-									<th>Amount</th>
-									<th>Of Installments</th>
+									<th>Balance</th>
+									<th>Date</th>
 									<th>Status</th>
 									<th>Action</th>
 								</tr>
 							</thead>
 							<tbody>
 								{!loading
-									? (data?.loans || []).map((record: any, idx: any) => {
+									? (data?.Installment || []).map((record: any, idx: any) => {
 											return (
 												<tr key={idx}>
-													<td>{record.loanCode}</td>
+													<td>{record.loanId.loanCode}</td>
 													<td className="table-user">
-														&nbsp;{record?.customerCode?.customerCode}
+														&nbsp;{record?.balance}
 													</td>
 													<td className="table-user">
-														{record?.customerCode?.firstName}&nbsp;
-														{record?.customerCode?.surName}
-													</td>
-													<td className="table-user">{record?.loanAmount}</td>
-													<td className="table-user">
-														{record?.ofInstallments}
+														{String(record?.date).split('T')[0]}
 													</td>
 													<td className="table-user">{record?.status}</td>
 
 													<td className="d-flex gap-3">
-														<ActionModal data={record}>
+														<ActionModal data={record} type="edit">
 															<i className="ri-settings-3-line" />
 														</ActionModal>
+														<Link to={`/report/loans/${record?.loanId._id}`}>
+															<i className="bi bi-eye"></i>
+														</Link>
 													</td>
 												</tr>
 											)
@@ -93,6 +96,12 @@ const StripedRows = () => {
 														<Placeholder style={{ width: '25%' }} />
 													</Placeholder>
 												</td>
+												<td>
+													<Placeholder as="p" animation="glow">
+														<Placeholder style={{ width: '25%' }} />
+													</Placeholder>
+												</td>
+											
 
 												<td>
 													<Placeholder as="p" animation="glow">
@@ -108,11 +117,11 @@ const StripedRows = () => {
 									  ))}
 							</tbody>
 						</Table>
-						{data?.totalPages > 1 && (	
-						<PaginationWithStates
-							pages={data?.totalPages}
-							handlePageChange={handlePageChange}
-						/>
+						{data?.totalPages > 1 && (
+							<PaginationWithStates
+								pages={data?.totalPages}
+								handlePageChange={handlePageChange}
+							/>
 						)}
 					</div>
 				</Card.Body>
@@ -126,18 +135,37 @@ const StripedRows = () => {
 	)
 }
 
-const ActionModal = ({ children, data }: { children: any; data?: any }) => {
+const ActionModal = ({
+	children,
+	data,
+	type,
+}: {
+	children: any
+	data?: any
+	type?: string
+}) => {
 	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
 		useModal()
 	const [formData, setFormData] = useState<any>({
-		reminderDescription: '',
-		endDate: data.endDate,
+		description: '',
+		date: '',
+		status: 'Reminded',
 	})
-	
-	const [updateReminder] = useUpdateLoanMutation()
-	const handleSubmit = (e: any) => {
+
+	useEffect(() => {
+		if (type === 'edit') {
+			setFormData({
+				...formData,
+				description: data?.description,
+				date: data?.date,
+			})
+		}
+	}, [data])
+
+	const [updateReminder , { isLoading: createLoading }] = useUpdateInstallmentMutation()
+	const handleSubmit = async (e: any) => {
 		e.preventDefault()
-		updateReminder({ id: data._id, formData })
+		await updateReminder({ id: data._id, formData })
 		toggleModal()
 	}
 
@@ -164,19 +192,24 @@ const ActionModal = ({ children, data }: { children: any; data?: any }) => {
 								label="Description"
 								type="textarea"
 								name="description"
-								value={formData.reminderDescription}
-								onChange={(e) => setFormData({ ...formData, reminderDescription: e.target.value })}
+								value={formData.description}
+								onChange={(e) =>
+									setFormData({
+										...formData,
+										description: e.target.value,
+									})
+								}
 								containerClass="mb-3"
 							/>
-							<h5>Payment Receipt</h5>
-							
-							
+
 							<FormInput
 								type="date"
 								name="file"
 								containerClass="mb-3"
-								value={String(formData.endDate.slice(0, 10))}
-								onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+								value={String(formData.date.slice(0, 10))}
+								onChange={(e) =>
+									setFormData({ ...formData, date: e.target.value })
+								}
 							/>
 						</form>
 					</Modal.Body>
@@ -184,11 +217,8 @@ const ActionModal = ({ children, data }: { children: any; data?: any }) => {
 						<Button variant="light" onClick={toggleModal}>
 							Close
 						</Button>{' '}
-						
-						<Button
-							onClick={handleSubmit}
-							variant="success">
-							Save Change
+						<Button onClick={handleSubmit} variant="success">
+							{createLoading ? 'Saving...' : 'Save Change'}	
 						</Button>
 					</Modal.Footer>
 				</Modal>

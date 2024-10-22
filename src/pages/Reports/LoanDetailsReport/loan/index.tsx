@@ -6,13 +6,20 @@ import {
 } from '@/features/api/paymentSlice'
 import { useModal } from '@/hooks'
 import { toast } from 'material-react-toastify'
-import { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, Card, Image, Modal, Spinner, Table } from 'react-bootstrap'
 import { useParams } from 'react-router-dom'
 import {
 	useActionLoanMutation,
 	useGetALoanQuery,
 } from '@/features/api/loanSlice'
+import {
+	useCreateInstallmentMutation,
+	useDeleteInstallmentMutation,
+	useGetInstallmentQuery,
+	useUpdateInstallmentMutation,
+} from '@/features/api/installmentSlice'
+import { string } from 'yup'
 
 const index = () => {
 	const { id } = useParams()
@@ -248,6 +255,7 @@ const index = () => {
 				</Card.Body>
 			</Card>
 
+			<InstallmentColorTable />
 			<BorderedColorTable />
 		</>
 	)
@@ -307,12 +315,210 @@ const BorderedColorTable = () => {
 								<button className="btn btn-primary">Finished</button>
 							</ActionModal>
 							<ModalSizes data={data}>
-								<button className="btn btn-success">Add New</button>
+								<button className="btn btn-success">Add New Payment</button>
 							</ModalSizes>
 						</div>
 					</div>
 				</Card.Body>
 			</Card>
+		</>
+	)
+}
+
+const InstallmentColorTable = () => {
+	const { id } = useParams()
+	const { data } = useGetInstallmentQuery(id)
+
+	return (
+		<>
+			<Card>
+				<Card.Header>
+					<h4 className="header-title">Installments Information</h4>
+				</Card.Header>
+				<Card.Body>
+					<div className="table-responsive-sm">
+						<Table className="table-bordered border-primary table-centered mb-0">
+							<thead>
+								<tr>
+									<th>Date</th>
+									<th>Balance (Rs)</th>
+									<th>Status</th>
+									<th className="text-center">Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								{(data?.Installment || []).map((info: any, idx: Number) => {
+									return (
+										<tr key={String(idx)}>
+											<td className="table-user">{info?.date ? String(info?.date).split('T')[0]: ''}</td>
+											<td className="table-user">{info?.balance}</td>
+											<td className="table-user">{info?.status}</td>
+											<td className="table-user" align="center">
+												<Installments data={info} type="edit">
+													<i className="ri-settings-3-line" />
+												</Installments>
+											</td>
+										</tr>
+									)
+								})}
+								<tr></tr>
+							</tbody>
+						</Table>
+
+						<div className="d-flex justify-content-end py-3">
+							<Installments>
+								<button className="btn btn-success">
+									Add New Installments
+								</button>
+							</Installments>
+						</div>
+					</div>
+				</Card.Body>
+			</Card>
+		</>
+	)
+}
+
+const Installments = ({
+	children,
+	data,
+	type,
+}: {
+	children: React.ReactNode
+	data?: any
+	type?: string
+}) => {
+	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
+		useModal()
+	const { id } = useParams()
+	const [formData, setFormData] = useState({
+		date: '',
+		balance: '',
+		status: 'Pending',
+		loanId: id,
+	})
+
+	useEffect(() => {
+		if (type === 'edit') {
+			setFormData({
+				date: data?.date,
+				balance: data?.balance,
+				status: data?.status,
+				loanId: id,
+			})
+		}
+	}, [data])
+
+	const [createInstallment, { isLoading: createLoading }] =
+		useCreateInstallmentMutation()
+
+	const [updateInstallment, { isLoading: updateLoading }] =
+		useUpdateInstallmentMutation()
+	const [deleteInstallment, { isLoading: deleteLoading }] =
+		useDeleteInstallmentMutation()
+
+	const onSubmit = async () => {
+		try {
+			if (type === 'edit') {
+				await updateInstallment({ formData, id: data?._id }).unwrap()
+				toast.success('Installment updated successfully')
+			} else {
+				await createInstallment(formData).unwrap()
+				toast.success('Installment added successfully')
+				setFormData({ ...formData, date: '', balance: '', status: 'pending' })
+			}
+			toggleModal()
+		} catch (error) {
+			console.log(error)
+			toast.error('Something went wrong')
+		}
+	}
+
+	return (
+		<>
+			<div className="d-flex flex-wrap gap-2">
+				<div onClick={() => openModalWithSize('lg')} className="flex">
+					<>{children}</>
+				</div>
+				<Modal
+					className="fade"
+					show={isOpen}
+					onHide={toggleModal}
+					dialogClassName={className}
+					size={size}
+					scrollable={scroll}>
+					<Modal.Header onHide={toggleModal} closeButton>
+						<h4 className="modal-title">Add New Installment</h4>
+					</Modal.Header>
+					<Modal.Body>
+						<form>
+							<FormInput
+								name="employeeId"
+								label="Employee"
+								type="select"
+								containerClass="mb-3"
+								className="form-select"
+								value={formData?.status}
+								onChange={(e) =>
+									setFormData({ ...formData, status: e.target.value })
+								}>
+								<option value="Pending">Pending</option>
+								<option value="Reminded">Reminded</option>
+								<option value="Finished">Finished</option>
+							</FormInput>
+
+							<FormInput
+								label="Collecting Date"
+								type="date"
+								name="date"
+								value={formData.date}
+								onChange={(e) =>
+									setFormData({ ...formData, date: e.target.value })
+								}
+								containerClass="mb-3"
+							/>
+							<FormInput
+								label="Balance"
+								type="number"
+								name="balance"
+								value={formData.balance}
+								onChange={(e) =>
+									setFormData({ ...formData, balance: e.target.value })
+								}
+								containerClass="mb-3"
+							/>
+						</form>
+						{data?.description && (
+							<>
+								<h5>Description </h5>
+								<p>{data?.description}</p>
+							</>
+						)}
+					</Modal.Body>
+					<Modal.Footer>
+						<Button variant="light" onClick={toggleModal}>
+							Close
+						</Button>{' '}
+						{type === 'edit' && data.status !== 'Finished' && (
+							<Button
+								disabled={createLoading}
+								variant="danger"
+								onClick={async () => {
+									await deleteInstallment(data?._id)
+									toggleModal()
+								}}>
+								{deleteLoading && <Spinner size="sm" className="me-2" />}
+								Delete
+							</Button>
+						)}
+						<Button onClick={onSubmit}>
+							{updateLoading && <Spinner size="sm" className="me-2" />}
+							{createLoading && <Spinner size="sm" className="me-2" />}Save
+							changes
+						</Button>
+					</Modal.Footer>
+				</Modal>
+			</div>
 		</>
 	)
 }
@@ -509,9 +715,9 @@ const ActionModal = ({ children, data }: { children: any; data?: any }) => {
 							Close
 						</Button>{' '}
 						<Button onClick={() => onSubmit()} variant="success">
-						{actionLoading && <Spinner size="sm" className="me-2" />}
+							{actionLoading && <Spinner size="sm" className="me-2" />}
 							Finished
-						</Button>	
+						</Button>
 					</Modal.Footer>
 				</Modal>
 			</div>

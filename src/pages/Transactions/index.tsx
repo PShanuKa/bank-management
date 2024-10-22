@@ -405,14 +405,14 @@ const ModalSizes = ({
 
 	const { data: loanDays } = useGetSettingQuery(undefined)
 
-	useEffect(() => {
-		if (loanDays?.setting?.interestRate) {
-			setFormData((prevData: any) => ({
-				...prevData,
-				interestRate: loanDays?.setting?.interestRate,
-			}))
-		}
-	}, [loanDays])
+	// useEffect(() => {
+	// 	if (loanDays?.setting?.interestRate) {
+	// 		setFormData((prevData: any) => ({
+	// 			...prevData,
+	// 			interestRate: loanDays?.setting?.interestRate,
+	// 		}))
+	// 	}
+	// }, [loanDays])
 
 	const { data: Customer } = useSearchCustomerQuery(cCode)
 	const { data: Guarantor } = useSearchGuarantorQuery(gCode)
@@ -457,7 +457,7 @@ const ModalSizes = ({
 					collectWeek: '',
 					collectDay: '',
 					loanAmount: 0,
-					interestRate: 40,
+					interestRate: 0,
 					startDate: new Date().toISOString().substr(0, 10),
 					endDate: '',
 					description: '',
@@ -579,7 +579,6 @@ const ModalSizes = ({
 
 							<div className="bg-light rounded p-1 mb-3"></div>
 
-							<h4>Loan Details</h4>
 							<h5>Loan Duration : {formData.loanDuration} Days</h5>
 							<h5>Loan Amount (Rs): {formData.loanAmount}</h5>
 							<h5>Interest Rate : {formData.interestRate}%</h5>
@@ -611,12 +610,31 @@ const ModalSizes = ({
 								{(loanDays?.setting?.days || []).map(
 									(data: any, idx: number) => (
 										<Form.Check
+											key={idx}
 											type="radio"
 											id={String(idx)}
 											name="loanDuration"
 											value={data.day}
 											onChange={handleChange}
 											label={`${data.day} Days`}
+										/>
+									)
+								)}
+							</div>
+
+							<h5>Interest Rate {Number(formData.interestRate)} %</h5>
+
+							<div className="my-2">
+								{(loanDays?.setting?.interestRate || []).map(
+									(data: any, idx: number) => (
+										<Form.Check
+											type="radio"
+											key={idx}
+											id={String(idx) + 'interestRate'}
+											name="interestRate"
+											value={data.rate}
+											onChange={handleChange}
+											label={`${data.rate} % Rates`}
 										/>
 									)
 								)}
@@ -631,15 +649,8 @@ const ModalSizes = ({
 								containerClass="mb-3"
 							/>
 
-							<FormInput
-								label="interest (%)"
-								type="number"
-								name="interestRate"
-								value={formData.interestRate}
-								disabled
-								onChange={handleChange}
-								containerClass="mb-3"
-							/>
+							
+
 							<FormInput
 								label="# Of Installments"
 								type="number"
@@ -648,6 +659,7 @@ const ModalSizes = ({
 								onChange={handleChange}
 								containerClass="mb-3"
 							/>
+
 							<div className="bg-light rounded p-1 mb-3"></div>
 							<FormInput
 								label="Start Date"

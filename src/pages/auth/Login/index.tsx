@@ -21,16 +21,7 @@ interface UserData {
 const BottomLinks = () => {
 	return (
 		<Row>
-			<Col xs={12} className="text-center">
-				<p className="text-dark-emphasis">
-					Don't have an account?{' '}
-					<Link
-						to="/auth/register"
-						className="text-dark fw-bold ms-1 link-offset-3 text-decoration-underline">
-						<b>Sign up</b>
-					</Link>
-				</p>
-			</Col>
+			
 		</Row>
 	)
 }
@@ -104,22 +95,14 @@ const Login = () => {
 						id="password"
 						placeholder="Enter your password"
 						containerClass="mb-3">
-						{/* <Link to="/auth/forgot-password" className="text-muted float-end">
-							<small>Forgot your password?</small>
-						</Link> */}
+						
 					</FormInput>
-					{/* <FormInput
-						label="Remember me"
-						type="checkbox"
-						name="checkbox"
-						containerClass={'mb-3'}
-					/> */}
+					
 					<div className="mb-0 text-start">
 						<Button
 							variant="soft-primary"
 							className="w-100"
 							type="submit"
-							// disabled={loading}
 						>
 							<i className="ri-login-circle-fill me-1" />{' '}
 							<span className="fw-bold">Log In</span>{' '}

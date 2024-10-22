@@ -10,7 +10,6 @@ export const userTaskSlice = apiSlice.injectEndpoints({
             }),
             invalidatesTags: ['UserTask'],
         }),
-      
         updateUserTask: builder.mutation({
             query: (data) => ({
                 url: `/user-task/update/${data.id}`,
