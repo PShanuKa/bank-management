@@ -379,7 +379,8 @@ const ModalSizes = ({
 							<Image
 								src={formData.profilePicture}
 								alt="avatar"
-								className="img-fluid avatar-lg rounded"
+								style={{ width: '300px',  }}
+								className="img-fluid  rounded"
 							/>
 						)}
 						{imageLoading.profilePicture && <Spinner className="m-2" />}
@@ -503,7 +504,8 @@ const ModalSizes = ({
 							<Image
 								src={formData.homeImage}
 								alt="avatar"
-								className="img-fluid avatar-lg  rounded"
+								style={{ width: '300px',  }}
+								className="img-fluid   rounded"
 							/>
 						)}
 						<FormInput
@@ -519,7 +521,8 @@ const ModalSizes = ({
 							<Image
 								src={formData.billImage}
 								alt="avatar"
-								className="img-fluid avatar-lg w-full rounded"
+								style={{ width: '300px',  }}
+								className="img-fluid  w-full rounded"
 							/>
 						)}
 						<FormInput
@@ -535,7 +538,8 @@ const ModalSizes = ({
 							<Image
 								src={formData.paySheetImage}
 								alt="avatar"
-								className="img-fluid avatar-lg rounded"
+								style={{ width: '300px',  }}
+								className="img-fluid  rounded"
 							/>
 						)}
 						<FormInput
@@ -551,7 +555,8 @@ const ModalSizes = ({
 							<Image
 								src={formData.signatureImage}
 								alt="avatar"
-								className="img-fluid avatar-lg rounded"
+								style={{ width: '300px',  }}
+								className="img-fluid  rounded"
 							/>
 						)}
 						<FormInput

@@ -380,7 +380,8 @@ const ModalSizes = ({
 								<Image
 									src={formData.profilePicture}
 									alt="avatar"
-									className="img-fluid avatar-lg rounded"
+									style={{ width: '300px',  }}
+									className="img-fluid  rounded"
 								/>
 							)}
 							<FormInput

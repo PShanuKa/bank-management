@@ -19,7 +19,7 @@ import {
 	useGetInstallmentQuery,
 	useUpdateInstallmentMutation,
 } from '@/features/api/installmentSlice'
-import { string } from 'yup'
+
 
 const index = () => {
 	const { id } = useParams()

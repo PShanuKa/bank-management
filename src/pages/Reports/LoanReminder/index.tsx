@@ -4,17 +4,15 @@ import {
 	useReminderInstallmentQuery,
 	useUpdateInstallmentMutation,
 } from '@/features/api/installmentSlice'
-import {
-	useGetReminderLoanQuery,
-	useUpdateLoanMutation,
-} from '@/features/api/loanSlice'
-
 import { useModal } from '@/hooks'
+
+
+
 
 import { useEffect, useState } from 'react'
 import { Button, Card, Modal, Placeholder, Table } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
-import { date } from 'yup'
+
 
 const index = () => {
 	return (

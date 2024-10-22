@@ -1,5 +1,5 @@
-import { Button, Col, Row } from 'react-bootstrap'
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Button,  Row } from 'react-bootstrap'
+import {  Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import AuthLayout from '../AuthLayout'
