@@ -632,7 +632,7 @@ const ModalSizes = ({
 											key={idx}
 											id={String(idx) + 'interestRate'}
 											name="interestRate"
-											value={data.rate}
+											value={data?.rate}
 											onChange={handleChange}
 											label={`${data.rate} % Rates`}
 										/>
