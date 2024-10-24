@@ -46,7 +46,7 @@ const Projects = () => {
 						return (
 							<tr key={idx}>
 								<td>{data?.customerName}</td>
-								<td>{data?.date && data?.date?.split('T')?.[0]}</td>
+								<td>{ data?.date?.split('T')[0]}</td>
 
 								<td>{data?.areaId?.name}</td>
 								<td>{data?.amount || 0}</td>
@@ -153,7 +153,7 @@ const ModalSizes = ({ children, data }: { children: any; data?: any }) => {
 									<tr>
 										<th scope="row">Collecting Date</th>
 										<td className="ng-binding text-end">
-											{data?.date.split('T')[0]}
+											{data?.date?.split('T')[0]}
 										</td>
 									</tr>
 									<tr>

@@ -81,7 +81,7 @@ const StripedRows = () => {
 														&nbsp;{record?.customerName}
 													</td>
 													<td className="table-user">
-														{data?.date && record?.date?.split('T')?.[0]}&nbsp;
+														{record?.date?.split('T')[0]}&nbsp;
 													</td>
 													<td>
 														{record?.areaId?.name}
