@@ -46,7 +46,7 @@ const Projects = () => {
 						return (
 							<tr key={idx}>
 								<td>{data?.customerName}</td>
-								<td>{data?.date?.split('T')[0]}</td>
+								<td>{data?.date && data?.date?.split('T')?.[0]}</td>
 
 								<td>{data?.areaId?.name}</td>
 								<td>{data?.amount || 0}</td>
