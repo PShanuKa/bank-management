@@ -15,27 +15,27 @@ import { useModal } from '@/hooks'
 import { useSelector } from 'react-redux'
 
 const Projects = () => {
-	const userId =useSelector((state: any) => state?.auth?.userInfo)
-	const [statusFilter , setStatusFilter] = useState('')
+	const userId = useSelector((state: any) => state?.auth?.userInfo)
+	const [statusFilter, setStatusFilter] = useState('')
 	const [page] = useState(1)
 	const limit = 10000
 	const { data } = useGetAllUserTaskQuery({ search: statusFilter, page, limit })
-	
+
 	useEffect(() => {
-		if(!userId.isAdmin){
+		if (!userId.isAdmin) {
 			setStatusFilter(userId._id)
 		}
-	},[userId])
-
+	}, [userId])
 
 	return (
 		<CustomCardPortlet cardTitle="Collection Report" titleClass="header-title">
 			<Table hover responsive className="table-nowrap mb-0">
 				<thead>
 					<tr>
+						<th>Customer ID</th>
 						<th>Customer Name</th>
-						<th>Collecting Date</th>
 						<th>Area</th>
+						<th>Collecting Date</th>
 						<th>Amount</th>
 						<th>Status</th>
 						<th className="text-center">Action</th>
@@ -45,10 +45,14 @@ const Projects = () => {
 					{(data?.userTask || []).map((data: any, idx: any) => {
 						return (
 							<tr key={idx}>
-								<td>{data?.customerName}</td>
-								<td>{ data?.date?.split('T')[0]}</td>
+								<td>{data?.customerCode?.customerCode}</td>
+								<td>
+									{data?.customerCode?.firstName}&nbsp;
+									{data?.customerCode?.surName}
+								</td>
+								<td>{data?.customerCode?.areaCode?.name}</td>
+								<td>{data?.date?.split('T')[0]}</td>
 
-								<td>{data?.areaId?.name}</td>
 								<td>{data?.amount || 0}</td>
 								<td>
 									<span
@@ -124,15 +128,22 @@ const ModalSizes = ({ children, data }: { children: any; data?: any }) => {
 					<Modal.Body>
 						<div>
 							<h5 className="mt-4 fs-17 text-dark">Loan Information</h5>
-							<table
-								
-								className="table table-condensed mb-0 border-top">
+							<table className="table table-condensed mb-0 border-top">
 								<tbody>
+									<tr>
+										<th scope="row">Customer Code</th>
+										<td className="ng-binding">
+											<p className="ng-binding text-end ">
+												{data?.customerCode?.customerCode}
+											</p>
+										</td>
+									</tr>
 									<tr>
 										<th scope="row">Customer Name</th>
 										<td className="ng-binding">
 											<p className="ng-binding text-end ">
-												{data?.customerName}
+												{data?.customerCode?.firstName}&nbsp;
+												{data?.customerCode?.surName}
 											</p>
 										</td>
 									</tr>
@@ -140,14 +151,14 @@ const ModalSizes = ({ children, data }: { children: any; data?: any }) => {
 										<th scope="row">Area</th>
 										<td className="ng-binding">
 											<p className="ng-binding text-end ">
-												{data?.areaId?.name}
+												{data?.customerCode?.areaCode?.name}
 											</p>
 										</td>
 									</tr>
 									<tr>
-										<th scope="row">Loan Status</th>
-										<td>
-											<p className="ng-binding text-end">{data?.status}</p>
+										<th scope="row">Address</th>
+										<td className="ng-binding text-end">
+											{data?.customerCode?.address}
 										</td>
 									</tr>
 									<tr>
@@ -157,10 +168,6 @@ const ModalSizes = ({ children, data }: { children: any; data?: any }) => {
 										</td>
 									</tr>
 									<tr>
-										<th scope="row">Address</th>
-										<td className="ng-binding text-end">{data?.address}</td>
-									</tr>
-									<tr>
 										<th scope="row">Amount</th>
 										<td>
 											<p className="ng-binding text-end">
@@ -168,6 +175,22 @@ const ModalSizes = ({ children, data }: { children: any; data?: any }) => {
 											</p>
 										</td>
 									</tr>
+									<tr>
+										<th scope="row">Loan Status</th>
+										<td>
+											<p className="ng-binding text-end">{data?.status}</p>
+										</td>
+									</tr>
+									{data?.description && (
+										<tr>
+											<th scope="row">description</th>
+											<td>
+												<p className="ng-binding text-end">
+													{data?.description}
+												</p>
+											</td>
+										</tr>
+									)}
 								</tbody>
 							</table>
 						</div>

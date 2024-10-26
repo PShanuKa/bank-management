@@ -1,14 +1,17 @@
 import { FormInput, PageBreadcrumb } from '@/components'
 import PaginationWithStates from '@/components/Pagination'
-import { useGetAllAreasQuery } from '@/features/api/areaSlice'
+import { useSearchCustomerQuery } from '@/features/api/customerSlice'
 import { useGetAllEmployeesQuery } from '@/features/api/employeeSlice'
-import { useCreateUserTaskMutation, useDeleteUserTaskMutation, useGetAllUserTaskQuery, useUpdateUserTaskMutation } from '@/features/api/userTaskSlice'
+import {
+	useCreateUserTaskMutation,
+	useDeleteUserTaskMutation,
+	useGetAllUserTaskQuery,
+	useUpdateUserTaskMutation,
+} from '@/features/api/userTaskSlice'
 import { useModal } from '@/hooks'
 import { toast } from 'material-react-toastify'
 import { useEffect, useState } from 'react'
 import { Button, Card, Modal, Placeholder, Table } from 'react-bootstrap'
-
-
 
 const index = () => {
 	return (
@@ -18,15 +21,21 @@ const index = () => {
 		</>
 	)
 }
-export default index;
+export default index
 
 const StripedRows = () => {
 	const [statusFilter, setStatusFilter] = useState('')
-	const [page , setPage] = useState(1)
+	const [page, setPage] = useState(1)
 	const limit = 20
-	const { data, isLoading: loading } = useGetAllUserTaskQuery({search : statusFilter, page, limit })
-	const { data : employees } = useGetAllEmployeesQuery({ page: 1, limit: 1000000 })
-
+	const { data, isLoading: loading } = useGetAllUserTaskQuery({
+		search: statusFilter,
+		page,
+		limit,
+	})
+	const { data: employees } = useGetAllEmployeesQuery({
+		page: 1,
+		limit: 1000000,
+	})
 
 	const handlePageChange = (page: number) => {
 		setPage(page)
@@ -55,7 +64,9 @@ const StripedRows = () => {
 							</option>
 							{(employees?.users || []).map((record: any, idx: any) => {
 								return (
-									<option key={idx} value={record?._id}>{record?.firstName} {record?.surName}</option>
+									<option key={idx} value={record?._id}>
+										{record?.firstName} {record?.surName}
+									</option>
 								)
 							})}
 						</FormInput>
@@ -64,10 +75,11 @@ const StripedRows = () => {
 						<Table className="table-striped table-centered mb-0">
 							<thead>
 								<tr>
+									<th>Customer Code</th>
 									<th>Customer Name</th>
-									<th>Collecting Date</th>
 									<th>Area</th>
 									<th>Amount</th>
+									<th>Collecting Date</th>
 									<th>Status</th>
 									<th>Action</th>
 								</tr>
@@ -78,20 +90,24 @@ const StripedRows = () => {
 											return (
 												<tr key={idx}>
 													<td className="table-user">
-														&nbsp;{record?.customerName}
+														&nbsp;{record?.customerCode?.customerCode}
 													</td>
+													<td className="table-user">
+														&nbsp;{record?.customerCode?.firstName}
+														&nbsp;{record?.customerCode?.surName}
+													</td>
+
+													<td className="table-user">
+														&nbsp;{record?.customerCode?.areaCode?.name}
+													</td>
+													<td className="table-user">{record?.amount || 0}</td>
 													<td className="table-user">
 														{record?.date?.split('T')[0]}&nbsp;
 													</td>
-													<td>
-														{record?.areaId?.name}
-													</td>
-													
-													<td className="table-user">{record?.amount || 0}</td>
 													<td className="table-user">{record?.status}</td>
 
 													<td className="d-flex gap-3">
-														<ModalSizes data={record} type='edit'>
+														<ModalSizes data={record} type="edit">
 															<i className="ri-settings-3-line" />
 														</ModalSizes>
 													</td>
@@ -135,11 +151,11 @@ const StripedRows = () => {
 									  ))}
 							</tbody>
 						</Table>
-						{data?.totalPages > 1 && (	
-						<PaginationWithStates
-							pages={data?.totalPages}
-							handlePageChange={handlePageChange}
-						/>
+						{data?.totalPages > 1 && (
+							<PaginationWithStates
+								pages={data?.totalPages}
+								handlePageChange={handlePageChange}
+							/>
 						)}
 					</div>
 				</Card.Body>
@@ -165,18 +181,31 @@ const ModalSizes = ({
 	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
 		useModal()
 
+	const [cCode, setCCode] = useState<string>('')
+	const [customerData, setCustomerData] = useState<any>()
+	const { data: Customer } = useSearchCustomerQuery(cCode)
+
 	const [formData, setFormData] = useState<any>({
 		userId: '',
 		amount: 0,
-		address: '',
-		customerName: '',
+		customerCode: '',
 		date: '',
-		areaId: '',
+
 		description: '',
 	})
 
 	useEffect(() => {
-		if(type === 'edit'){
+		if (Customer) {
+			setCustomerData(Customer?.customers?.[0] || '')
+			setFormData((prevData: any) => ({
+				...prevData,
+				customerCode: Customer?.customers?.[0]._id || '',
+			}))
+		}
+	}, [Customer])
+
+	useEffect(() => {
+		if (type === 'edit') {
 			setFormData({
 				userId: data?.userId?._id || '',
 				amount: data?.amount || 0,
@@ -187,34 +216,31 @@ const ModalSizes = ({
 				description: data?.description || '',
 			})
 		}
-	},[data, type])
+	}, [data, type])
 
 	const { data: employees } = useGetAllEmployeesQuery({
 		page: 1,
 		limit: 1000000,
 	})
 
-	const { data: areas } = useGetAllAreasQuery({ page: 1, limit: 1000000 })
 	const [createTask] = useCreateUserTaskMutation()
 	const [updateTask] = useUpdateUserTaskMutation()
-	const [deleteTask] =useDeleteUserTaskMutation()
+	const [deleteTask] = useDeleteUserTaskMutation()
 
 	const onSubmit = async () => {
 		try {
 			let response
 			if (type === 'edit') {
-				response = await updateTask({formData, id: data._id}).unwrap()
-				
+				response = await updateTask({ formData, id: data._id }).unwrap()
 			} else {
 				response = await createTask(formData).unwrap()
 				setFormData({
+					userId: '',
 					amount: 0,
-					address: '',
-					customerName: '',
+					customerCode: '',
 					date: '',
-					areaId: '',
-					description: '',
 				})
+				setCCode('')
 			}
 			toast.success(response.message)
 			toggleModal()
@@ -232,7 +258,7 @@ const ModalSizes = ({
 
 	const deleteTaskHandler = async () => {
 		try {
-			const response = await deleteTask( data?._id).unwrap()
+			const response = await deleteTask(data?._id).unwrap()
 			toast.success(response.message)
 			toggleModal()
 		} catch (err: any) {
@@ -244,9 +270,9 @@ const ModalSizes = ({
 				console.log(err)
 				toast.error('Something went wrong')
 			}
-			}
-			}
-		
+		}
+	}
+
 	return (
 		<>
 			<div className="d-flex flex-wrap gap-2">
@@ -265,27 +291,6 @@ const ModalSizes = ({
 					</Modal.Header>
 					<Modal.Body>
 						<form>
-							
-							<FormInput
-								label="Area"
-								type="select"
-								name="location"
-								className="form-select"
-								value={formData.areaId}
-								onChange={(e) => {
-									setFormData({ ...formData, areaId: e.target.value })
-								}}
-								containerClass="mb-3">
-								<option defaultValue="">Select ...</option>
-								{(areas?.areas || []).map((record: any, idx: any) => {
-									return (
-										<option key={idx} value={record?._id}>
-											{record?.name}
-										</option>
-									)
-								})}
-							</FormInput>
-
 							<FormInput
 								label="Employee name"
 								type="select"
@@ -306,25 +311,26 @@ const ModalSizes = ({
 									)
 								})}
 							</FormInput>
+							{customerData && (
+								<>
+									<h5>Customer Details</h5>
+									<p>
+										Name: {customerData?.firstName} {customerData?.surName}
+									</p>
+									{customerData?.nic && <p>Nic: {customerData?.nic}</p>}
+								</>
+							)}
+
 							<FormInput
-								label="Customer name"
+								label="Customer Code"
 								type="text"
 								name="address"
-								value={formData.customerName}
+								value={cCode}
 								onChange={(e) => {
-									setFormData({ ...formData, customerName: e.target.value })
+									setCCode(e.target.value)
 								}}
 								containerClass="mb-3"
-							/>
-							<FormInput
-								label="Customer Address"
-								type="text"
-								name="address"
-								value={formData.address}
-								onChange={(e) => {
-									setFormData({ ...formData, address: e.target.value })
-								}}
-								containerClass="mb-3"
+								className=""
 							/>
 							<FormInput
 								label="Collating Amount"
@@ -363,7 +369,9 @@ const ModalSizes = ({
 							Close
 						</Button>{' '}
 						{type === 'edit' && (
-							<Button variant='danger' onClick={deleteTaskHandler}>Delete</Button>
+							<Button variant="danger" onClick={deleteTaskHandler}>
+								Delete
+							</Button>
 						)}
 						<Button onClick={onSubmit}>Save changes</Button>
 					</Modal.Footer>

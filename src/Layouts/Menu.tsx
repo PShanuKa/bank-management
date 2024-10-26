@@ -98,7 +98,7 @@ const MenuItemWithChildren = ({
 }
 
 const MenuItem = ({ item, className, linkClassName }: SubMenus) => {
-	// console.log(linkClassName)
+	
 	return (
 		<li className={`side-nav-item ${className}`}>
 			<MenuItemLink item={item} className={linkClassName} />
@@ -109,7 +109,6 @@ const MenuItem = ({ item, className, linkClassName }: SubMenus) => {
 const MenuItemLink = ({ item, className }: SubMenus) => {
 	const path = useLocation().pathname.split('/')[2]
 	const url = item.url?.split('/')[2]
-	console.log(path, url)
 	return (
 		<Link
 			to={item.url!}
