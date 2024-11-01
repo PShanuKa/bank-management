@@ -19,7 +19,8 @@ import {
 	useGetInstallmentQuery,
 	useUpdateInstallmentMutation,
 } from '@/features/api/installmentSlice'
-
+import { useGetAAreasQuery } from '@/features/api/areaSlice'
+import { useCreateUserTaskMutation } from '@/features/api/userTaskSlice'
 
 const index = () => {
 	const { id } = useParams()
@@ -255,7 +256,7 @@ const index = () => {
 				</Card.Body>
 			</Card>
 
-			<InstallmentColorTable />
+			<InstallmentColorTable loanInfo={data?.Loan} />
 			<BorderedColorTable />
 		</>
 	)
@@ -325,7 +326,7 @@ const BorderedColorTable = () => {
 	)
 }
 
-const InstallmentColorTable = () => {
+const InstallmentColorTable = ({ loanInfo }: { loanInfo?: any }) => {
 	const { id } = useParams()
 	const { data } = useGetInstallmentQuery(id)
 
@@ -350,11 +351,16 @@ const InstallmentColorTable = () => {
 								{(data?.Installment || []).map((info: any, idx: Number) => {
 									return (
 										<tr key={String(idx)}>
-											<td className="table-user">{info?.date ? String(info?.date).split('T')[0]: ''}</td>
+											<td className="table-user">
+												{info?.date ? String(info?.date).split('T')[0] : ''}
+											</td>
 											<td className="table-user">{info?.balance}</td>
 											<td className="table-user">{info?.status}</td>
 											<td className="table-user" align="center">
-												<Installments data={info} type="edit">
+												<Installments
+													data={info}
+													loanInfo={loanInfo}
+													type="edit">
 													<i className="ri-settings-3-line" />
 												</Installments>
 											</td>
@@ -383,19 +389,31 @@ const Installments = ({
 	children,
 	data,
 	type,
+	loanInfo,
 }: {
 	children: React.ReactNode
 	data?: any
 	type?: string
+	loanInfo?: any
 }) => {
 	const { isOpen, size, className, scroll, toggleModal, openModalWithSize } =
 		useModal()
 	const { id } = useParams()
+
 	const [formData, setFormData] = useState({
 		date: '',
 		balance: '',
 		status: 'Pending',
 		loanId: id,
+	})
+	const [task, setTask] = useState<any>({
+		userId: '',
+		amount: 0,
+		customerCode: '',
+		date: '',
+		description: '',
+		areaId: '',
+		installmentId: '',
 	})
 
 	useEffect(() => {
@@ -406,11 +424,35 @@ const Installments = ({
 				status: data?.status,
 				loanId: id,
 			})
+			setTask({
+				...task,
+				userId: data?.userId,
+				amount: data?.balance,
+				customerCode: loanInfo?.customerCode?._id,
+				date: data?.date,
+				installmentId: data?._id,
+			})
 		}
-	}, [data])
+	}, [data, loanInfo])
+
+	
+
+	const { data: area } = useGetAAreasQuery({ id: loanInfo?.areaId._id || '45' })
+
+	useEffect(() => {
+		if (area?.area?.employeeId?._id && loanInfo?.areaId._id) {
+			setTask({
+				...task,
+				userId: area?.area?.employeeId?._id,
+				areaId: loanInfo?.areaId._id,
+			})
+		}
+	}, [area])
 
 	const [createInstallment, { isLoading: createLoading }] =
 		useCreateInstallmentMutation()
+
+	const [createUserTask , { isLoading: createTaskLoading }] = useCreateUserTaskMutation()
 
 	const [updateInstallment, { isLoading: updateLoading }] =
 		useUpdateInstallmentMutation()
@@ -427,6 +469,21 @@ const Installments = ({
 				toast.success('Installment added successfully')
 				setFormData({ ...formData, date: '', balance: '', status: 'pending' })
 			}
+			toggleModal()
+		} catch (error) {
+			console.log(error)
+			toast.error('Something went wrong')
+		}
+	}
+
+	const assignTaskHandler = async () => {
+		if (!loanInfo?.areaId) {
+			toast.error('Not assigned to any area')
+			return
+		}
+		try {
+			const response = await createUserTask(task).unwrap()
+			toast.success(response.message)
 			toggleModal()
 		} catch (error) {
 			console.log(error)
@@ -511,6 +568,9 @@ const Installments = ({
 								Delete
 							</Button>
 						)}
+						<Button onClick={assignTaskHandler}>
+						{createTaskLoading && <Spinner size="sm" className="me-2" />}
+						Assign Task</Button>
 						<Button onClick={onSubmit}>
 							{updateLoading && <Spinner size="sm" className="me-2" />}
 							{createLoading && <Spinner size="sm" className="me-2" />}Save

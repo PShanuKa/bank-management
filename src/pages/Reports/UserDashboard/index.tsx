@@ -190,7 +190,6 @@ const ModalSizes = ({
 		amount: 0,
 		customerCode: '',
 		date: '',
-
 		description: '',
 	})
 

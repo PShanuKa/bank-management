@@ -25,6 +25,14 @@ export const areaSlice = apiSlice.injectEndpoints({
 			}),
 			providesTags: ['Area'],
 		}),
+		getAAreas: builder.query({
+			query: (data) => ({
+				url: `/area/${data.id}`,
+				method: 'GET',
+			}),
+			providesTags: ['Area'],
+		}),
+		
 	}),
 })
 
@@ -32,4 +40,5 @@ export const {
 	useAreaCreateMutation,
 	useAreaUpdateMutation,
 	useGetAllAreasQuery,
+	useGetAAreasQuery
 } = areaSlice
