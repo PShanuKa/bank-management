@@ -435,8 +435,6 @@ const Installments = ({
 		}
 	}, [data, loanInfo])
 
-	
-
 	const { data: area } = useGetAAreasQuery({ id: loanInfo?.areaId._id || '45' })
 
 	useEffect(() => {
@@ -447,12 +445,13 @@ const Installments = ({
 				areaId: loanInfo?.areaId._id,
 			})
 		}
-	}, [area])
+	}, [area?.area?.employeeId])
 
 	const [createInstallment, { isLoading: createLoading }] =
 		useCreateInstallmentMutation()
 
-	const [createUserTask , { isLoading: createTaskLoading }] = useCreateUserTaskMutation()
+	const [createUserTask, { isLoading: createTaskLoading }] =
+		useCreateUserTaskMutation()
 
 	const [updateInstallment, { isLoading: updateLoading }] =
 		useUpdateInstallmentMutation()
@@ -481,6 +480,16 @@ const Installments = ({
 			toast.error('Not assigned to any area')
 			return
 		}
+		await setTask({
+			...task,
+			userId: area?.area?.employeeId?._id,
+			areaId: loanInfo?.areaId._id,
+			amount: data?.balance,
+			customerCode: loanInfo?.customerCode?._id,
+			date: data?.date,
+			installmentId: data?._id,
+		})
+		
 		try {
 			const response = await createUserTask(task).unwrap()
 			toast.success(response.message)
@@ -568,9 +577,12 @@ const Installments = ({
 								Delete
 							</Button>
 						)}
-						<Button onClick={assignTaskHandler}>
-						{createTaskLoading && <Spinner size="sm" className="me-2" />}
-						Assign Task</Button>
+						{type === 'edit' && (
+							<Button onClick={assignTaskHandler}>
+								{createTaskLoading && <Spinner size="sm" className="me-2" />}
+								Assign Task
+							</Button>
+						)}
 						<Button onClick={onSubmit}>
 							{updateLoading && <Spinner size="sm" className="me-2" />}
 							{createLoading && <Spinner size="sm" className="me-2" />}Save
