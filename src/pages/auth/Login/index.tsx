@@ -52,7 +52,7 @@ const Login = () => {
 		try {
 			const data = await login({ email, password }).unwrap()
 			dispatch(setUser(data))
-			console.log(data)
+			
 			navigate('/')
 		} catch (err: any) {
 			if (err.status === 404) {
