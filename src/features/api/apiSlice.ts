@@ -32,7 +32,7 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
 	if (result?.error?.status === 401) {
 		
 		// localStorage.removeItem('userInfo')
-		// localStorage.removeItem('Bearer')
+		// // localStorage.removeItem('Bearer')
 
 		api.dispatch(logOut())
 	}
